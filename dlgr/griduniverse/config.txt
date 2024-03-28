@@ -2,23 +2,27 @@
 mode = debug
 auto_recruit = true
 network = FullyConnected
-max_participants = 2
 num_rounds = 5
-time_per_round = 2
-block_size = 50
-columns = 10
-rows = 10
-window_rows = 10
-window_columns = 10
+block_size = 25
+columns = 15
+rows = 15
+window_rows = 15
+window_columns = 15
 use_identicons = true
-show_chatroom = true
-recruiter = hotair
+background_animation = false
 
 [Collab Parameters]
-goal_items = 2
-num_cook = 0
-cook_time = 0
+max_participants = 2
+goal_items = 3
+num_cook = 2
+player_overlap = true
+walls_density = 0
+cook_time = 15
+time_per_round = 2
 game_over_cond = time
+
+[Docker]
+docker_image_base_name = ghcr.io/lucaslinzmeier/dallinger-griduniverse/griduniverse
 
 [HIT Configuration]
 title = Griduniverse
@@ -45,6 +49,3 @@ num_dynos_worker = 1
 host = 0.0.0.0
 clock_on = false
 logfile = -
-
-[docker]
-docker_image_base_name = ghcr.io/dallinger/griduniverse

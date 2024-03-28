@@ -1,3 +1,23 @@
 source venv/bin/activate; dallinger docker start-services; cd dlgr/griduniverse; dallinger develop debug;
 
 dallinger develop browser --route ad; dallinger develop browser --route ad;
+
+
+
+
+
+
+
+cocosci-lab@princeton.edu
+dallinger  docker-ssh  servers  add  --user  cocosci-lab@princeton.edu  --host  lucasl-griduniverse-245b7b7e9553.herokuapp.com
+
+
+https://lucasl-griduniverse-245b7b7e9553.herokuapp.com/
+
+
+registry.heroku.com/lucasl-griduniverse/web
+
+
+docker tag ghcr.io/username/repository/image:[TAG] registry.heroku.com/your-app-name/web
+docker push registry.heroku.com/lucasl-griduniverse/web
+heroku container:release web --app lucasl-griduniverse

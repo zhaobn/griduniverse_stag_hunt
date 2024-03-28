@@ -300,6 +300,24 @@ var playerSet = (function () {
       return false;
     };
 
+    //Line Edited - new PlayerAt
+
+    PlayerSet.prototype.isPlayerAtNew = function (position) {
+      var id, player;
+
+      for (id in this._players) {
+        if (this._players.hasOwnProperty(id)) {
+          player = this._players[id];
+          if (positionsAreEqual(position, player.position)) {
+            return player;
+          }
+        }
+      }
+      return null;
+    };
+
+    //Line Edited - new PlayerAt
+
     PlayerSet.prototype.drawToGrid = function (grid) {
       var player,
           id,
@@ -425,7 +443,7 @@ var playerSet = (function () {
           if (settings.motion_tremble_rate === 0 && existingPlayer.positionInSync) {
             freshPlayerData.position = existingPlayer.position;
           } else {
-            console.log("Overriding position from server!");
+            console.log("Overriding position from server! Hi its me im actually here in the original file space");
           }
         }
         var last_dimness = 1;
@@ -583,7 +601,7 @@ var GUSocket = (function () {
       var msg = JSON.stringify(data),
           channel = this.controlChannel;
 
-      console.log("Sending message to the " + channel + " channel: " + msg);
+      console.log("Sending message to the " + channel + " channel ahhhhhhhhhhhhhhhhhhhh: " + msg);
       this.socket.send(channel + ':' + msg);
     };
 
@@ -626,6 +644,24 @@ pixels.frame(function() {
 
   for (const [position, item] of gridItems.entries()) {
     if (players.isPlayerAt(position)) {
+      // Line Edited - Player visibility
+      // If player should be invisible draw the item
+      if(!settings.others_visible) {
+        console.log("This loop!")
+        // find player at position
+        player = players.isPlayerAtNew(position)
+
+        //If this player is not the ego? player display the item anyways
+        if(!(player.id == dallinger.getUrlParameter('participant_id'))){
+          var texture = undefined;
+          if (item.item_id in pixels.itemTextures) {
+            texture = item.item_id;
+          }
+          section.plot(position[1], position[0], item.color, texture);
+        }
+      }
+      // Line Edited - Player visibility
+
       if (!item.interactive && item.calories) {
         // Non-interactive items get consumed immediately
         // IF they have non-zero caloric value.
@@ -1345,7 +1381,7 @@ $(document).ready(function() {
       var average_delay = delays.reduce(function(sum, value){
         return sum + value;
       }, 0) / delays.length;
-      console.log('Average delay between state updates: ' + average_delay + 'ms.');
+      console.log('Average delay between state updates: whyyyyyyy' + average_delay + 'ms.');
     }
   }, 5000);
 

@@ -176,94 +176,106 @@ transition_defaults:
   modify_uses: [0, 0]
 
 items:
-  - crossable: true
-    interactive: true
-    name: Hare
-    item_id: hare
-    portable: false
-    spawn_rate: 0
-    item_count: 2
-    sprite: "emoji:🐇"
-    calories: 3
+  # One Hour, One Life items
+
 
   - crossable: true
     interactive: true
-    name: Stag
-    item_id: stag
-    portable: false
+    name: Stone
+    item_id: stone
+    n_uses: 1
+    portable: true
     spawn_rate: 0
-    item_count: 1
-    sprite: "emoji:🦌"
-    calories: 8
+    item_count: 0
+    sprite: "image:https://github.githubassets.com/images/icons/emoji/unicode/1faa8.png?v8"
 
   - crossable: true
     interactive: true
     name: Blank
     item_id: blank
+    n_uses: 1
     portable: true
     spawn_rate: 0
     item_count: 0
-    sprite: "emoji:🥧"
-
-  - crossable: true
-    interactive: true
-    name: Consumed
-    item_id: consumed
-    portable: true
-    spawn_rate: 0
-    item_count: 0
-    sprite: "emoji:🥧"
 
   
 
-  - crossable: true
-    interactive: true
-    name: Oven
-    item_id: oven
+  - name: Stag
+    item_id: stag
+    n_uses: 1
+    sprite: "emoji:🦌"
+    spawn_rate: 0
+    item_count: 1
     portable: false
-    spawn_rate: 0
-    item_count: 0
-    sprite: "image:sprites/oven.png"
-
-  - crossable: true
+    crossable: true
     interactive: true
-    name: Oven is Baking
-    item_id: oven_with_pie
+
+  - name: Hare
+    item_id: hare
+    n_uses: 1
+    sprite: "emoji:🐇"
+    spawn_rate: 0
+    item_count: 2
     portable: false
-    spawn_rate: 0
-    item_count: 0
-    sprite: "image:sprites/ovenwithpie.png"
-
-  - crossable: true
+    crossable: true
     interactive: true
-    name: Pie
-    item_id: pie
-    portable: true
-    spawn_rate: 0
-    item_count: 0
-    sprite: "emoji:🥧"
+
+
+ 
+
+ 
 
 transitions:
-  
-  - actor_start: blank
-    actor_end: consumed
-    target_start: hare
-    target_end: hare
-    visible: always
-    calories: 3
-    last_use: false
-    modify_uses:
-      - 0
-      - 0
 
-  - actor_start: blank
-    actor_end: consumed
+  # At least two players can use a stone to consume a stag
+  - actor_start: stone
+    actor_end: stone
     required_actors: 2
     target_start: stag
     target_end: stag
     visible: always
-    calories: 8
     last_use: false
+    calories: 8
     modify_uses:
+      - -1
       - 0
+
+  # One player may kill a hare
+  - actor_start: stone
+    actor_end: stone
+    required_actors: 1
+    target_start: hare
+    target_end: hare
+    visible: always
+    last_use: false
+    calories: 3
+    modify_uses:
+      - -1
       - 0
+
+  # At least two players can use a blank to consume a stag
+  - actor_start: blank
+    actor_end: blank
+    required_actors: 2
+    target_start: stag
+    target_end: stag
+    visible: always
+    last_use: false
+    calories: 8
+    modify_uses:
+      - -1
+      - 0
+
+  # One player may kill a hare
+  - actor_start: blank
+    actor_end: blank
+    required_actors: 1
+    target_start: hare
+    target_end: hare
+    visible: always
+    last_use: false
+    calories: 3
+    modify_uses:
+      - -1
+      - 0
+
