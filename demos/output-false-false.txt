@@ -1,0 +1,6 @@
+Examining ./Pilot_Data_False_False/DataTrial-PrePilot-false-false1.csv:
+0,0,0,0,0,0,0,0
+
+Examining ./Pilot_Data_False_False/DataTrial-PrePilot-false-false2.csv:
+1,0,0,1,0,1,1,1
+
