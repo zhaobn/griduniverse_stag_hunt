@@ -2,6 +2,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import sem
 
 # %%
 # Read the CSV file
@@ -55,27 +56,68 @@ merged_df['mean_chats'] = merged_df['mean_chats'].round(2)
 plt.figure(figsize=(8, 6))
 sns.barplot(data=merged_df, x='round_id', y='mean_chats', hue='others_visible', palette='colorblind', dodge=True)
 
+
 # %%
-# Games chatted
-chats_per_game = chat_df.groupby(['game_id', 'others_visible'])['action'].count().reset_index()
-chats_per_game['others_visible'] = chats_per_game['others_visible'].astype(str)
+# Time spent
+item_actions = df[df['action'] == 'item']
+item_actions_sorted = item_actions.sort_values(by=['game_id', 'round_id', 'time_stamp'])
+first_item_actions = item_actions_sorted.groupby(['game_id', 'round_id', 'chat_visible', 'others_visible']).first().reset_index()
+last_item_actions = item_actions_sorted.groupby(['game_id', 'round_id', 'chat_visible', 'others_visible']).last().reset_index()
 
-# Get unique values in 'others_visible'
-unique_values = chats_per_game['others_visible'].unique()
+first_item_actions['type'] = 'first'
+last_item_actions['type'] = 'last'
+combined = pd.concat([first_item_actions, last_item_actions])
 
-# Define the custom color palette for the unique values in 'others_visible'
-custom_palette = {value: 'blue' if value == 'False' else 'orange' for value in unique_values}
+# Calculate mean and standard error for each round, type, chat_visible, and others_visible
+mean_elapse = combined.groupby(['round_id', 'type', 'chat_visible', 'others_visible'])['round_elapse'].mean().reset_index()
+std_error = combined.groupby(['round_id', 'type', 'chat_visible', 'others_visible'])['round_elapse'].apply(sem).reset_index()
+mean_elapse = mean_elapse.merge(std_error, on=['round_id', 'type', 'chat_visible', 'others_visible'], suffixes=('_mean', '_sem'))
 
-plt.figure(figsize=(8, 6))
-sns.histplot(data=chats_per_game, x='action', hue='others_visible', palette=custom_palette, binwidth=1, multiple='stack')
+# Plotting
+unique_conditions = mean_elapse[['chat_visible', 'others_visible']].drop_duplicates()
+n_conditions = unique_conditions.shape[0]
 
-plt.title('Histogram of Number of Actions per Game ID')
-plt.xlabel('Number of Actions')
-plt.ylabel('Frequency')
+fig, axes = plt.subplots(2, 2, figsize=(15, 12), sharex=True, sharey=True)
+axes = axes.flatten()
 
-legend_labels = ['False', 'True']
-legend_handles = [plt.Rectangle((0,0),1,1, color=custom_palette[label]) for label in legend_labels]
-plt.legend(legend_handles, legend_labels, title='others_visible')
+for i, (ax, (chat_vis, others_vis)) in enumerate(zip(axes, unique_conditions.values)):
+  condition_data = mean_elapse[(mean_elapse['chat_visible'] == chat_vis) & (mean_elapse['others_visible'] == others_vis)]
+  sns.barplot(x='round_id', y='round_elapse_mean', hue='type', data=condition_data, ci=None, palette=['blue', 'orange'], ax=ax)
+
+  # Add error bars
+  for j in range(len(condition_data)):
+      x_pos = j // 2 + (j % 2) * 0.4 - 0.2
+      y_val = condition_data.iloc[j]['round_elapse_mean']
+      y_err = condition_data.iloc[j]['round_elapse_sem']
+      ax.errorbar(x=x_pos, y=y_val, yerr=y_err, fmt='none', capsize=5, color='black')
+
+  ax.set_title(f'Chat Visible: {chat_vis}, Others Visible: {others_vis}')
+  ax.set_xlabel('Round ID')
+  ax.set_ylabel('Mean Round Elapse')
+
+plt.tight_layout()
+
+# %%
+# # Games chatted
+# chats_per_game = chat_df.groupby(['game_id', 'others_visible'])['action'].count().reset_index()
+# chats_per_game['others_visible'] = chats_per_game['others_visible'].astype(str)
+
+# # Get unique values in 'others_visible'
+# unique_values = chats_per_game['others_visible'].unique()
+
+# # Define the custom color palette for the unique values in 'others_visible'
+# custom_palette = {value: 'blue' if value == 'False' else 'orange' for value in unique_values}
+
+# plt.figure(figsize=(8, 6))
+# sns.histplot(data=chats_per_game, x='action', hue='others_visible', palette=custom_palette, binwidth=1, multiple='stack')
+
+# plt.title('Histogram of Number of Chats per Game ID')
+# plt.xlabel('Number of Actions')
+# plt.ylabel('Frequency')
+
+# legend_labels = ['False', 'True']
+# legend_handles = [plt.Rectangle((0,0),1,1, color=custom_palette[label]) for label in legend_labels]
+# plt.legend(legend_handles, legend_labels, title='others_visible')
 
 
 # %%
