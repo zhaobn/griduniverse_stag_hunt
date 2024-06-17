@@ -5,7 +5,6 @@
   <script type="text/javascript">
     function check_answers() {
       var leach_complete, leach_question;
-      if ($('#difficulty').val() == "0" || $('#engagement').val() == "0") { return false; }
       if ($("input[name='leach_1']").length) {
         leach_complete = true;
         for (leach_question=1; leach_question<21; leach_question++) {
@@ -16,6 +15,7 @@
         }
         if (!leach_complete) { return false; }
       }
+
       $('#submit-questionnaire').prop('disabled', false);
       return true;
     }
@@ -29,92 +29,13 @@
 <form>
     <div class="row question">
         <div class="column column-75">
-            <p>On a scale of 1-7 (where 7 is the most engaged), please rate how <b>ENGAGED</b> you were while performing the task:</p>
+            <p>What is your Prolific ID?</p>
         </div>
         <div class="column column-25">
-            <select id="engagement" name="engagement" onChange="check_answers()">
-                <option value="0"></option>
-                <option value="7">7</option>
-                <option value="6">6</option>
-                <option value="5">5</option>
-                <option value="4">4</option>
-                <option value="3">3</option>
-                <option value="2">2</option>
-                <option value="1">1</option>
-            </select>
+            <input type="text" id = "workerID" name="workerID" onChange="check_answers()">
         </div>
     </div>
-    <div class="row question">
-        <div class="column column-75">
-            <p>On a scale of 1-7 (where 7 is the most difficult), please rate how <b>DIFFICULT</b> you found the task:</p>
-        </div>
-        <div class="column column-25">
-            <select id="difficulty" name="difficulty" onChange="check_answers()">
-                <option value="0"></option>
-                <option value="7">7</option>
-                <option value="6">6</option>
-                <option value="5">5</option>
-                <option value="4">4</option>
-                <option value="3">3</option>
-                <option value="2">2</option>
-                <option value="1">1</option>
-            </select>
-        </div>
-
-        <div class="row question">
-            <div class="column column-75">
-                <p>On a scale of 1-7 (where 7 is the most clear), please rate how <b>CLEAR</b> the instructions were for this task:</p>
-            </div>
-            <div class="column column-25">
-                <select id="engagement" name="engagement" onChange="check_answers()">
-                    <option value="0"></option>
-                    <option value="7">7</option>
-                    <option value="6">6</option>
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                    <option value="1">1</option>
-                </select>
-            </div>
-        </div>
-
-    </div>
-    {% if experiment.grid.fun_survey %}
-    <div class="row question">
-        <div class="column column-75">
-            <p>On a scale of 1-7 (where 7 is the most fun), please rate how <b>FUN</b> you found the task:</p>
-        </div>
-        <div class="column column-25">
-            <select id="difficulty" name="difficulty">
-                <option value="0"></option>
-                <option value="7">7</option>
-                <option value="6">6</option>
-                <option value="5">5</option>
-                <option value="4">4</option>
-                <option value="3">3</option>
-                <option value="2">2</option>
-                <option value="1">1</option>
-            </select>
-        </div>
-    </div>
-    {% endif %}
-    {% if experiment.grid.difi_question %}
-    <div class="row question">
-        <div class="column">
-            <br />
-            The diagram below is designed to represent your relationship with
-            <strong>{{ experiment.grid.difi_group_label }}</strong>.
-            Please indicate your relationship by clicking and dragging the smaller
-            "Me" circle to the position that best captures your relationship with
-            <strong>{{ experiment.grid.difi_group_label }}</strong>.
-            <input class="DIFI-input" id="DIFI" name="DIFI" data-group-label="{{ experiment.grid.difi_group_label }}" data-group-image="{{ experiment.grid.difi_group_image }}" />
-        </div>
-    </div>
-    {% endif %}
-    {% if experiment.grid.leach_survey %}
-      {% include 'leach.html' %}
-    {% endif %}
+   
 </form>
 <hr>
 <div>
