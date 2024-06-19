@@ -1,4 +1,4 @@
-"""The Griduniverse."""
+"""The Guniduniverse."""
 
 import collections
 import datetime
@@ -18,13 +18,16 @@ import flask
 import gevent
 import yaml
 from cached_property import cached_property
-from dallinger import db
+from dallinger import db, recruiters
 from dallinger.compat import unicode
 from dallinger.config import get_config
 from dallinger.experiment import Experiment
 from faker import Factory
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import scoped_session, sessionmaker
+
+#Line Edited - Multiple Groups
+from operator import attrgetter
 
 from . import distributions
 from .bots import Bot
@@ -181,6 +184,9 @@ class Gridworld(object):
 
         self.log_event = kwargs.get("log_event", lambda x: None)
 
+        #Line edited
+        self.prolific_assignment_id = ""
+
         # Players
         self.num_players = kwargs.get("max_participants", 3)
 
@@ -213,18 +219,16 @@ class Gridworld(object):
 
         # Components
 
-        #LINE EDITED CONDTIONS
-        self.show_chatroom = random.choice([True, False])
+        self.show_chatroom = kwargs.get("show_chatroom", True)
+
+
+        self.others_visible = kwargs.get("others_visible", True)
 
 
 
         self.show_grid = kwargs.get("show_grid", True)
 
         # Identity
-
-        #LINE EDITED CONDITIONS
-        self.others_visible = random.choice([True, False])
-
         self.num_colors = kwargs.get("num_colors", 3)
         self.mutable_colors = kwargs.get("mutable_colors", False)
         self.costly_colors = kwargs.get("costly_colors", False)
@@ -485,6 +489,15 @@ class Gridworld(object):
         if not self.remaining_round_time:
             self.round += 1
 
+            #Line Edited Round Logic
+            msg = {
+            "type": "round_end",
+            "round": self.round -1,
+            }
+
+            #Line Edited Database storage
+            self.log_event(msg)
+
             #LINE EDITED ROUND LOGIC
             self.num_items_consumed = 0
 
@@ -685,48 +698,55 @@ class Gridworld(object):
         text = """<p>Thank you for participating in our experiment.  Here are the instructions:"""
         text += """<p><p>Page 1/2: Basic Controls"""
 
-        text += """<br><img src='static/images/gameplay.png' height='150'><br>"""
-        text += """<p>You are going to play a game live with another participants. The objective of this game is 
-            to get as many points as you can.
-            The game is played on a {g.columns} x {g.rows} grid, where each player occupies one block."""
+        text += """<br><img src='static/images/game_image.png' height='300'><br>"""
+        text += """<p>You are going to play a game live with another participant. 
 
-
-        text += """<p>There are two players participating in this game."""
+            <p>The game is played on a {g.columns} x {g.rows} grid, where each player occupies one block."""
 
         if self.others_visible:
             text += """  You and the other player will be marked by different colors (BLUE, YELLOW or ORANGE)."""
         
         else:
-            text += """  However, you will not be able to see where the other player is on the grid."""
+            text += """  <b>However, you will not be able to see where the other player is on the grid.</b>"""
 
         
         text += """<p>You can move around the grid using the arrow keys.
                 <br><img src='static/images/keys.gif' height='60'><br>
-                Players collect items using the spacebar.
+                You can collect items using the spacebar.
                 """
         if self.player_overlap:
-            text += " More than one player can occupy a block at the same time."
+            text += " More than one player may occupy a block at the same time."
         
       
         text += """<p><p>Page 2/2: Game instructions"""
-        text += """<p>In this game, you and your teammate are hunters!  
-            You can earn points by hunting the following game."""
+        text += """<p>In this game, you and the other player are hunters!  
+            You can earn points by hunting the following animals."""
 
         text += """<ul>
                     <li>🐇 Hare (3 points)</li>
                     <li>🦌 Stag (4 points)</li>
                 </ul>"""
         
-        text += """In order to successfully hunt, you must meet the following requirements:"""
+        text += """You may only hunt once per round, so you must choose whether to hunt a hare or a stag: """
 
         text += """<ul>
-                    <li>🐇 Collecting a hare requires one player. To collect a hare, occupy its space and hit spacebar.</li>
-                    <li>🦌 Collecting a stag requires two players. 
-                        To collect a stag, one player must occupy the stag's space or be adjacent to the stag's space. 
-                        The other player must occupy the stag's space and hit spacebar.  
-                        Both players will receive 4 points when a stag is collected.</li>
+                    <li>🐇 To hunt a hare (3 points), occupy its space and hit the spacebar. You will receive 3 points when the hare is caught.
+                    <br><img src='static/images/hare_collect.gif' height='300'><br>
+                    </li>
+                    <li>🦌 To hunt a stag (4 points): <b>both you and the other other player</b> must occupy the stag's space or be adjacent to the stag, 
+                    and one of you must hit the spacebar. Both players will receive 4 points when a stag is caught.
+                    <br><img src='static/images/stag_collect.gif' height='300'><br>
+                    </li>
                 </ul>"""
 
+        text += """<p>Animals do not disappear when you collect them."""
+        text += """<p>The game has 5 rounds, and a round ends after both players have hunted a hare or a stag.  
+        Remember: You cannot hunt both a hare and a stag in the same round, you must choose one or the other!"""
+
+        text += """<p><b>Your goal in this game is to get as many points as you can. </b>"""
+
+        text += """<p>You will receive <strong>$.05</strong> for each point
+                that you score at the end of the game.</p>"""
 
         if self.show_chatroom:
             text += """<p>A chatroom is available to send messages to the other
@@ -735,9 +755,6 @@ class Gridworld(object):
                 text += """ Player names shown on the chat window are pseudonyms.
                         <br><img src='static/images/chatroom.gif' height='150'>"""
             text += "</p>"
-        if self.dollars_per_point > 0:
-            text += """<p>You will receive <strong>${g.dollars_per_point}</strong> for each point
-                that you score at the end of the game.</p>"""
         return formatter.format(
             text,
             g=self,
@@ -832,13 +849,15 @@ class Gridworld(object):
         logger.warning(f"Spawning new item: {new_item}")
 
         logger.warning(self.others_visible)
+
+        
         self.log_event(
             {
                 "type": "spawn item",
                 "position": position,
             }
         )
-
+        
     def items_changed(self, last_items):
         locations = self.item_locations
         if len(last_items) != len(locations):
@@ -1286,6 +1305,7 @@ class Griduniverse(Experiment):
         self.config = get_config()
         super(Griduniverse, self).__init__(session)
         self.experiment_repeats = 1
+
         self.redis_conn = db.redis_conn
         if session:
             self.setup()
@@ -1300,7 +1320,9 @@ class Griduniverse(Experiment):
 
     def configure(self):
         super(Griduniverse, self).configure()
+
         self.num_participants = self.config.get("max_participants", 3)
+        self.num_recruits = self.config.get("num_recruits", 3)
         self.quorum = self.num_participants
         self.initial_recruitment_size = self.config.get(
             "num_recruits", self.num_participants
@@ -1375,6 +1397,14 @@ class Griduniverse(Experiment):
             self.game_loop,
         ]
 
+    #Line Edited - Recruiter
+    @cached_property
+    def recruiter(self):
+        """Reference to a Recruiter, the Dallinger class that recruits
+        participants.
+        """
+        return recruiters.from_config(get_config())
+
     def create_network(self):
         """Create a new network by reading the configuration file."""
         class_ = getattr(dallinger.networks, self.network_factory)
@@ -1382,6 +1412,9 @@ class Griduniverse(Experiment):
 
     def create_node(self, participant, network):
         try:
+            # Line Edited - replaced status
+            if participant.status == "replaced":
+                participant.status = "working"
             return dallinger.models.Node(network=network, participant=participant)
         finally:
             if not self.networks(full=False):
@@ -1392,6 +1425,13 @@ class Griduniverse(Experiment):
     def setup(self):
         """Setup the networks."""
         self.node_by_player_id = {}
+        
+        #Line edited Prolific data correction
+        self.worker_id_to_assignment_id = {}
+        self.worker_id_test = ""
+        self.assignment_id_test = ""
+        self.perm_hit_id = ""
+
         if not self.networks():
             super(Griduniverse, self).setup()
             for net in self.networks():
@@ -1404,6 +1444,127 @@ class Griduniverse(Experiment):
 
     def recruit(self):
         self.recruiter().close_recruitment()
+
+
+    '''
+    #Line Edited - Normalize_entry
+    def normalize_entry_information(self, entry_information):
+
+        if "STUDY_ID" in entry_information:
+            logger.warning("STUDY_ID FORMAT")
+            logger.warning(entry_information)
+            hit_id = entry_information["STUDY_ID"]
+            worker_id = entry_information["PROLIFIC_PID"]
+            assignment_id = entry_information["SESSION_ID"]
+
+            self.worker_id_to_assignment_id[worker_id] = assignment_id
+            self.perm_hit_id = hit_id
+            self.worker_id_test = worker_id
+            self.assignment_id_test = assignment_id
+
+            self.grid.prolific_assignment_id = assignment_id
+
+            logger.warning("USEFUL INFO \n")
+            logger.warning("")
+
+            logger.warning("STORING IN GRID?")
+            logger.warning(self.grid.prolific_assignment_id)
+            logger.warning("TEST WORKER ID AND ASSIGNMENT ID")
+            logger.warning(self.worker_id_test)
+            logger.warning(self.assignment_id_test)
+            logger.warning("WORKER-ASSIGNMENT DICTIONARY")
+            for key, value in self.worker_id_to_assignment_id.items():
+                logger.warning("Worker IN DICT: " + key)
+                logger.warning("Assignment IN DICT: " + value)
+
+            participant_data = {
+            "hit_id": worker_id,
+            "worker_id": worker_id,
+            "assignment_id": worker_id,
+            "entry_information": entry_information, 
+            }
+
+            return participant_data
+        
+        else:
+            logger.warning("NON-STUDY_ID FORMAT")
+            logger.warning(entry_information)
+
+            worker_id = entry_information.pop(
+                "workerId", entry_information.pop("worker_id", None)
+            )
+
+            logger.warning("USEFUL INFO \n")
+            logger.warning("")
+            logger.warning("STORING IN GRID?")
+            logger.warning(self.grid.prolific_assignment_id)
+
+            logger.warning("TEST WORKER ID AND ASSIGNMENT ID")
+            logger.warning(self.worker_id_test)
+            logger.warning(self.assignment_id_test)
+            logger.warning("WORKER-ASSIGNMENT DICTIONARY")
+            for key, value in self.worker_id_to_assignment_id.items():
+                logger.warning("Worker IN DICT: " + key)
+                logger.warning("Assignment IN DICT: " + value)
+
+            participant_data = {
+            "hit_id": worker_id,
+            "assignment_id": worker_id,
+            "worker_id": worker_id
+             }
+            if entry_information:
+                participant_data["entry_information"] = entry_information
+            return participant_data
+    '''
+
+    '''
+    def create_participant(
+        self,
+        worker_id,
+        hit_id,
+        assignment_id,
+        mode,
+        recruiter_name=None,
+        fingerprint_hash=None,
+        entry_information=None,
+    ):
+        """Creates and returns a new participant object. Uses
+        :attr:`~dallinger.experiment.Experiment.participant_constructor` as the
+        constructor.
+
+        :param worker_id: the recruiter Worker Id
+        :type worker_id: str
+        :param hit_id: the recruiter HIT Id
+        :type hit_id: str
+        :param assignment_id: the recruiter Assignment Id
+        :type assignment_id: str
+        :param mode: the application mode
+        :type mode: str
+        :param recruiter_name: the recruiter name
+        :type recruiter_name: str
+        :param fingerprint_hash: the user's fingerprint
+        :type fingerprint_hash: str
+        :param entry_information: a JSON serializable data structure containing
+                                  additional participant entry information
+        :returns: A :attr:`~dallinger.models.Participant` instance
+        """
+        if not recruiter_name:
+            recruiter = self.recruiter
+            if recruiter:
+                recruiter_name = recruiter.nickname
+
+        participant = self.participant_constructor(
+            recruiter_id=recruiter_name,
+            worker_id=worker_id,
+            assignment_id=worker_id,
+            hit_id=worker_id,
+            mode=mode,
+            fingerprint_hash=fingerprint_hash,
+            entry_information=entry_information,
+        )
+        self.session.add(participant)
+        return participant
+    '''
 
     def bonus(self, participant):
         """The bonus to be awarded to the given participant.
@@ -1500,6 +1661,19 @@ class Griduniverse(Experiment):
     def publish(self, msg):
         """Publish a message to all griduniverse clients"""
         self.redis_conn.publish("griduniverse", json.dumps(msg))
+
+    #LINE EDITED - GET NETWORK
+    def get_network_for_participant(self, participant):
+        if participant.nodes(failed="all"):
+            return None
+
+        networks = self.networks(full=False)
+
+        if networks:
+            return min(networks, key = attrgetter("id"))
+
+        else:
+            return None
 
     def handle_connect(self, msg):
         player_id = msg["player_id"]
@@ -1782,7 +1956,15 @@ class Griduniverse(Experiment):
                 }
                 self.publish(error_msg)
                 return
+        #Line Edited Database storage
+        msg = {
+            "type": "item_transition_info",
+            "player_id": player.id,
+            "item": location_item and location_item.serialize(),
+        }
 
+        #Line Edited Database storage
+        self.grid.log_event(msg)
         
 
         
@@ -2213,10 +2395,7 @@ class Griduniverse(Experiment):
     def analyze(self, data):
         return json.dumps(
             {
-                "average_payoff": self.average_payoff(data),
                 "average_score": self.average_score(data),
-                "number_of_actions": self.number_of_actions(data),
-                "average_time_to_start": self.average_time_to_start(data),
             }
         )
 
@@ -2337,6 +2516,21 @@ class Griduniverse(Experiment):
         scores = [player["score"] for player in players]
         return float(sum(scores)) / len(scores)
 
+    #Line Edited Save DF
+    def save_data_to_file(self, data, filename):
+        df = data.infos.df
+        df.to_csv(filename, index=False)
+    
+        # Open the same file in append mode
+        with open(filename, 'a') as file:
+            # Write a new line for separation
+            file.write('\n')
+        
+            # Write questions data to the same file
+            questions_df = data.questions.df
+            questions_df.to_csv(file, index=False, header=False)
+
+
     def _last_state_for_player(self, player_id):
         most_recent_grid_state = self.environment.state()
         if most_recent_grid_state is not None:
@@ -2356,3 +2550,5 @@ class Griduniverse(Experiment):
         )
 
         return finished_count >= self.initial_recruitment_size
+
+
