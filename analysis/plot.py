@@ -33,6 +33,7 @@ standard_errors = grouped_df.groupby(['round_id', 'chat_visible', 'others_visibl
 
 # Merge percentage_stag and standard_errors
 merged_df = pd.merge(percentage_stag, standard_errors, on=['round_id', 'chat_visible', 'others_visible'], suffixes=('_percentage', '_error'))
+grouped_df.to_csv('all_actions.csv')
 
 # Plot
 groups = merged_df.groupby(['chat_visible', 'others_visible'])
