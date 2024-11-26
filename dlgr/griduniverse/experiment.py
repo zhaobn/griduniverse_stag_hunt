@@ -1294,28 +1294,17 @@ class Game(object):
             **game_config,
         )
 
-    channel = "griduniverse_ctrl"
-    state_count = 0
-    replay_path = "/grid"
-
-    def __init__(self, session=None):
-        """Initialize the experiment."""
-        self.config = get_config()
-        super(Griduniverse, self).__init__(session)
-        self.experiment_repeats = 1
-
+        # Setup the environment for this game
+        self.node_by_player_id = {}
         self.redis_conn = db.redis_conn
 
-    def configure(self):
-        super(Griduniverse, self).configure()
+        # Setup the websocket channel names
+        self.broadcast_channel = "griduniverse-{}".format(network_id)
+        self.control_channel = "griduniverse_ctrl-{}".format(network_id)
 
-        self.num_participants = self.config.get("max_participants", 3)
-        self.num_recruits = self.config.get("num_recruits", 3)
-        self.quorum = self.num_participants
-        self.initial_recruitment_size = self.config.get(
-            "num_recruits", self.num_participants
-        )
-        self.network_factory = self.config.get("network", "FullyConnected")
+        channel = "griduniverse_ctrl"
+        state_count = 0
+        replay_path = "/grid"
 
     def on_launch(self):
         gevent.spawn(self.send_state_thread)

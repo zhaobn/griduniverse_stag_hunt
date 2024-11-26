@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 17);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -17281,7 +17281,7 @@
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(42), __webpack_require__(43)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41), __webpack_require__(42)(module)))
 
 /***/ }),
 /* 1 */,
@@ -17576,7 +17576,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
-var cssKeywords = __webpack_require__(27);
+var cssKeywords = __webpack_require__(4);
 
 // NOTE: conversions should only return primitive values (i.e. arrays, or
 //       values that give correct `typeof` results).
@@ -18447,6 +18447,165 @@ convert.rgb.gray = function (rgb) {
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+	"aliceblue": [240, 248, 255],
+	"antiquewhite": [250, 235, 215],
+	"aqua": [0, 255, 255],
+	"aquamarine": [127, 255, 212],
+	"azure": [240, 255, 255],
+	"beige": [245, 245, 220],
+	"bisque": [255, 228, 196],
+	"black": [0, 0, 0],
+	"blanchedalmond": [255, 235, 205],
+	"blue": [0, 0, 255],
+	"blueviolet": [138, 43, 226],
+	"brown": [165, 42, 42],
+	"burlywood": [222, 184, 135],
+	"cadetblue": [95, 158, 160],
+	"chartreuse": [127, 255, 0],
+	"chocolate": [210, 105, 30],
+	"coral": [255, 127, 80],
+	"cornflowerblue": [100, 149, 237],
+	"cornsilk": [255, 248, 220],
+	"crimson": [220, 20, 60],
+	"cyan": [0, 255, 255],
+	"darkblue": [0, 0, 139],
+	"darkcyan": [0, 139, 139],
+	"darkgoldenrod": [184, 134, 11],
+	"darkgray": [169, 169, 169],
+	"darkgreen": [0, 100, 0],
+	"darkgrey": [169, 169, 169],
+	"darkkhaki": [189, 183, 107],
+	"darkmagenta": [139, 0, 139],
+	"darkolivegreen": [85, 107, 47],
+	"darkorange": [255, 140, 0],
+	"darkorchid": [153, 50, 204],
+	"darkred": [139, 0, 0],
+	"darksalmon": [233, 150, 122],
+	"darkseagreen": [143, 188, 143],
+	"darkslateblue": [72, 61, 139],
+	"darkslategray": [47, 79, 79],
+	"darkslategrey": [47, 79, 79],
+	"darkturquoise": [0, 206, 209],
+	"darkviolet": [148, 0, 211],
+	"deeppink": [255, 20, 147],
+	"deepskyblue": [0, 191, 255],
+	"dimgray": [105, 105, 105],
+	"dimgrey": [105, 105, 105],
+	"dodgerblue": [30, 144, 255],
+	"firebrick": [178, 34, 34],
+	"floralwhite": [255, 250, 240],
+	"forestgreen": [34, 139, 34],
+	"fuchsia": [255, 0, 255],
+	"gainsboro": [220, 220, 220],
+	"ghostwhite": [248, 248, 255],
+	"gold": [255, 215, 0],
+	"goldenrod": [218, 165, 32],
+	"gray": [128, 128, 128],
+	"green": [0, 128, 0],
+	"greenyellow": [173, 255, 47],
+	"grey": [128, 128, 128],
+	"honeydew": [240, 255, 240],
+	"hotpink": [255, 105, 180],
+	"indianred": [205, 92, 92],
+	"indigo": [75, 0, 130],
+	"ivory": [255, 255, 240],
+	"khaki": [240, 230, 140],
+	"lavender": [230, 230, 250],
+	"lavenderblush": [255, 240, 245],
+	"lawngreen": [124, 252, 0],
+	"lemonchiffon": [255, 250, 205],
+	"lightblue": [173, 216, 230],
+	"lightcoral": [240, 128, 128],
+	"lightcyan": [224, 255, 255],
+	"lightgoldenrodyellow": [250, 250, 210],
+	"lightgray": [211, 211, 211],
+	"lightgreen": [144, 238, 144],
+	"lightgrey": [211, 211, 211],
+	"lightpink": [255, 182, 193],
+	"lightsalmon": [255, 160, 122],
+	"lightseagreen": [32, 178, 170],
+	"lightskyblue": [135, 206, 250],
+	"lightslategray": [119, 136, 153],
+	"lightslategrey": [119, 136, 153],
+	"lightsteelblue": [176, 196, 222],
+	"lightyellow": [255, 255, 224],
+	"lime": [0, 255, 0],
+	"limegreen": [50, 205, 50],
+	"linen": [250, 240, 230],
+	"magenta": [255, 0, 255],
+	"maroon": [128, 0, 0],
+	"mediumaquamarine": [102, 205, 170],
+	"mediumblue": [0, 0, 205],
+	"mediumorchid": [186, 85, 211],
+	"mediumpurple": [147, 112, 219],
+	"mediumseagreen": [60, 179, 113],
+	"mediumslateblue": [123, 104, 238],
+	"mediumspringgreen": [0, 250, 154],
+	"mediumturquoise": [72, 209, 204],
+	"mediumvioletred": [199, 21, 133],
+	"midnightblue": [25, 25, 112],
+	"mintcream": [245, 255, 250],
+	"mistyrose": [255, 228, 225],
+	"moccasin": [255, 228, 181],
+	"navajowhite": [255, 222, 173],
+	"navy": [0, 0, 128],
+	"oldlace": [253, 245, 230],
+	"olive": [128, 128, 0],
+	"olivedrab": [107, 142, 35],
+	"orange": [255, 165, 0],
+	"orangered": [255, 69, 0],
+	"orchid": [218, 112, 214],
+	"palegoldenrod": [238, 232, 170],
+	"palegreen": [152, 251, 152],
+	"paleturquoise": [175, 238, 238],
+	"palevioletred": [219, 112, 147],
+	"papayawhip": [255, 239, 213],
+	"peachpuff": [255, 218, 185],
+	"peru": [205, 133, 63],
+	"pink": [255, 192, 203],
+	"plum": [221, 160, 221],
+	"powderblue": [176, 224, 230],
+	"purple": [128, 0, 128],
+	"rebeccapurple": [102, 51, 153],
+	"red": [255, 0, 0],
+	"rosybrown": [188, 143, 143],
+	"royalblue": [65, 105, 225],
+	"saddlebrown": [139, 69, 19],
+	"salmon": [250, 128, 114],
+	"sandybrown": [244, 164, 96],
+	"seagreen": [46, 139, 87],
+	"seashell": [255, 245, 238],
+	"sienna": [160, 82, 45],
+	"silver": [192, 192, 192],
+	"skyblue": [135, 206, 235],
+	"slateblue": [106, 90, 205],
+	"slategray": [112, 128, 144],
+	"slategrey": [112, 128, 144],
+	"snow": [255, 250, 250],
+	"springgreen": [0, 255, 127],
+	"steelblue": [70, 130, 180],
+	"tan": [210, 180, 140],
+	"teal": [0, 128, 128],
+	"thistle": [216, 191, 216],
+	"tomato": [255, 99, 71],
+	"turquoise": [64, 224, 208],
+	"violet": [238, 130, 238],
+	"wheat": [245, 222, 179],
+	"white": [255, 255, 255],
+	"whitesmoke": [245, 245, 245],
+	"yellow": [255, 255, 0],
+	"yellowgreen": [154, 205, 50]
+};
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports) {
 
 
@@ -18485,7 +18644,7 @@ module.exports = isArray || function (val) {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18498,23 +18657,20 @@ module.exports = isArray || function (val) {
 
 
 
-var typeOf = __webpack_require__(35);
+var typeOf = __webpack_require__(34);
 
 module.exports = function isNumber(num) {
   var type = typeOf(num);
-
-  if (type === 'string') {
-    if (!num.trim()) return false;
-  } else if (type !== 'number') {
+  if (type !== 'number' && type !== 'string') {
     return false;
   }
-
-  return (num - num + 1) >= 0;
+  var n = +num;
+  return (n - n + 1) >= 0 && num !== '';
 };
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18531,7 +18687,7 @@ var tryStringObject = function tryStringObject(value) {
 };
 var toStr = Object.prototype.toString;
 var strClass = '[object String]';
-var hasToStringTag = __webpack_require__(32)();
+var hasToStringTag = __webpack_require__(31)();
 
 module.exports = function isString(value) {
 	if (typeof value === 'string') {
@@ -18545,10 +18701,10 @@ module.exports = function isString(value) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var convert = __webpack_require__(38);
+var convert = __webpack_require__(37);
 
 module.exports = function (cstr) {
     var m, conv, parts, alpha;
@@ -18634,12 +18790,12 @@ module.exports = function (cstr) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_reconnecting_websocket__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_reconnecting_websocket__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_reconnecting_websocket___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_reconnecting_websocket__);
 /*jshint esversion: 6 */
 /**
@@ -18769,18 +18925,18 @@ class GUSocket {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var parse = __webpack_require__(7);
-var isnumber = __webpack_require__(5);
-var isstring = __webpack_require__(6);
-var isarray = __webpack_require__(4);
-var convert = __webpack_require__(20);
-var layout = __webpack_require__(21);
-var texcoord = __webpack_require__(24);
+var parse = __webpack_require__(8);
+var isnumber = __webpack_require__(6);
+var isstring = __webpack_require__(7);
+var isarray = __webpack_require__(5);
+var convert = __webpack_require__(21);
+var layout = __webpack_require__(22);
+var texcoord = __webpack_require__(25);
 var _ = __webpack_require__(0);
-var pixdenticon = __webpack_require__(22);
+var pixdenticon = __webpack_require__(23);
 var md5 = __webpack_require__(2);
 
 function Pixels(data, textures, opts) {
@@ -18833,7 +18989,7 @@ function Pixels(data, textures, opts) {
     width / height,
   );
 
-  var regl = (this.regl = __webpack_require__(40)(canvas));
+  var regl = (this.regl = __webpack_require__(39)(canvas));
 
   // First texture in the texture map is an empty square
   var initial_texture = [];
@@ -19130,7 +19286,7 @@ module.exports = Pixels;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19277,7 +19433,7 @@ function rgbOnScale(startColor, endColor, percentage) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -19295,7 +19451,7 @@ function rgbOnScale(startColor, endColor, percentage) {
 (function() {
     var PNGlib;
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-        PNGlib = __webpack_require__(23);
+        PNGlib = __webpack_require__(24);
     } else {
         PNGlib = window.PNGlib;
     }
@@ -19481,14 +19637,14 @@ function rgbOnScale(startColor, endColor, percentage) {
 })();
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var colorString = __webpack_require__(28);
-var convert = __webpack_require__(25);
+var convert = __webpack_require__(26);
 
 var _slice = [].slice;
 
@@ -19970,12 +20126,12 @@ module.exports = Color;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function(exports) {
 
-  const generateGaussian = __webpack_require__(30);
+  const generateGaussian = __webpack_require__(29);
 
   // Complementary error function
   // From Numerical Recipes in C 2e p221
@@ -20110,10 +20266,10 @@ module.exports = Color;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Emitter = __webpack_require__(36)
+var Emitter = __webpack_require__(35)
 
 module.exports = attach
 
@@ -20166,7 +20322,7 @@ function attach(element, listener) {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
@@ -21231,30 +21387,30 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = jQuery;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;/*global dallinger, store */
 /*jshint esversion: 6 */
 
 (function (dallinger, require, settings) {
-  var grid = __webpack_require__(9);
-  var position = __webpack_require__(14);
-  var Mousetrap = __webpack_require__(15);
-  var $ = __webpack_require__(16);
-  var gaussian = __webpack_require__(13);
-  var Color = __webpack_require__(12);
-  var Identicon = __webpack_require__(11);
+  var grid = __webpack_require__(10);
+  var position = __webpack_require__(15);
+  var Mousetrap = __webpack_require__(16);
+  var $ = __webpack_require__(17);
+  var gaussian = __webpack_require__(14);
+  var Color = __webpack_require__(13);
+  var Identicon = __webpack_require__(12);
   var _ = __webpack_require__(0);
   var md5 = __webpack_require__(2);
-  var itemlib = __webpack_require__(10);
-  var socketlib = __webpack_require__(8);
+  var itemlib = __webpack_require__(11);
+  var socketlib = __webpack_require__(9);
 
   function coordsToIdx(x, y, columns) {
     return y * columns + x;
@@ -21539,45 +21695,70 @@ var require;/*global dallinger, store */
     drawToGrid(grid) {
       let minScore, maxScore, d, color, player_color;
 
-      if (settings.score_visible) {
-        minScore = this.minScore();
-        maxScore = this.maxScore();
-      }
+      //Line Edited - new PlayerAt
+      PlayerSet.prototype.isPlayerAtNew = function (position) {
+        var id, player;
 
-      for (const [id, player] of this._players) {
-        /* It's unlikely that auto motion will keep identical pace to server-side auto-motion */
-        /* this should be implemented either all on server or all on client */
-        if (player.motion_auto) {
-          player.move(player.motion_direction);
-        }
-        if (id === this.ego_id || settings.others_visible) {
-          player_color = settings.player_colors[name2idx(player.color)];
-          if (player.identity_visible) {
-            color = player_color;
-          } else {
-            color =
-              id === this.ego_id
-                ? Color.rgb(player_color).desaturate(0.6).rgb().array()
-                : INVISIBLE_COLOR;
-          }
-          if (settings.score_visible) {
-            if (maxScore - minScore > 0) {
-              d =
-                0.75 * (1 - (player.score - minScore) / (maxScore - minScore));
-            } else {
-              d = 0.375;
+        for (id in this._players) {
+          if (this._players.hasOwnProperty(id)) {
+            player = this._players[id];
+            if (positionsAreEqual(position, player.position)) {
+              return player;
             }
-            color = Color.rgb(player_color).desaturate(d).rgb().array();
-          } else {
-            color = player_color;
           }
-          var texture = 0;
-          if (settings.use_identicons) {
-            texture = parseInt(id, 10);
+        }
+        return null;
+      };
+
+      //Line Edited - new PlayerAt
+      PlayerSet.prototype.drawToGrid = function (grid) {
+        var player,
+            id,
+            minScore,
+            maxScore,
+            d,
+            color,
+            player_color;
+        if (settings.score_visible) {
+          minScore = this.minScore();
+          maxScore = this.maxScore();
+        }
+
+        for (const [id, player] of this._players) {
+          /* It's unlikely that auto motion will keep identical pace to server-side auto-motion */
+          /* this should be implemented either all on server or all on client */
+          if (player.motion_auto) {
+            player.move(player.motion_direction);
           }
-          grid.plot(player.position[1], player.position[0], color, texture);
-          if (id === this.ego_id) {
-            store.set("color", color2name(color));
+          if (id === this.ego_id || settings.others_visible) {
+            player_color = settings.player_colors[name2idx(player.color)];
+            if (player.identity_visible) {
+              color = player_color;
+            } else {
+              color =
+                id === this.ego_id
+                  ? Color.rgb(player_color).desaturate(0.6).rgb().array()
+                  : INVISIBLE_COLOR;
+            }
+            if (settings.score_visible) {
+              if (maxScore - minScore > 0) {
+                d =
+                  0.75 * (1 - (player.score - minScore) / (maxScore - minScore));
+              } else {
+                d = 0.375;
+              }
+              color = Color.rgb(player_color).desaturate(d).rgb().array();
+            } else {
+              color = player_color;
+            }
+            var texture = 0;
+            if (settings.use_identicons) {
+              texture = parseInt(id, 10);
+            }
+            grid.plot(player.position[1], player.position[0], color, texture);
+            if (id === this.ego_id) {
+              store.set("color", color2name(color));
+            }
           }
         }
       }
@@ -21643,7 +21824,7 @@ var require;/*global dallinger, store */
           ) {
             freshPlayerData.position = existingPlayer.position;
           } else {
-            console.log("Overriding position from server!");
+            console.log("Overriding position from server! Hi its me im actually here in the original file space");
           }
         }
         let last_dimness = 1;
@@ -21720,19 +21901,19 @@ var require;/*global dallinger, store */
     }
   }
 
-  // ego will be updated on page load
-  var players = new PlayerSet({ ego_id: undefined });
+// ego will be updated on page load
+var players = playerSet({'ego_id': undefined});
 
-  pixels.canvas.style.marginLeft = (window.innerWidth * 0.03) / 2 + "px";
-  pixels.canvas.style.marginTop = (window.innerHeight * 0.04) / 2 + "px";
-  document.body.style.transition = "0.3s all";
-  document.body.style.background = "#ffffff";
+pixels.canvas.style.marginLeft = window.innerWidth * 0.03 / 2 + "px";
+pixels.canvas.style.marginTop = window.innerHeight * 0.04 / 2 + "px";
+document.body.style.transition = "0.3s all";
+document.body.style.background = "#ffffff";
 
-  var startTime = performance.now();
+var startTime = performance.now();
 
-  pixels.frame(function () {
-    // Update the background.
-    var ego = players.ego(),
+pixels.frame(function() {
+  // Update the background.
+  var ego = players.ego(),
       w = getWindowPosition(),
       section = new Section(background, w.left, w.top),
       dimness,
@@ -21740,11 +21921,86 @@ var require;/*global dallinger, store */
       x,
       y;
 
-    // Animate background for each visible cell
-    section.map(function (x, y, color) {
-      var newColor = animateColor(color);
-      background[coordsToIdx(x, y, settings.columns)] = newColor;
-      return newColor;
+  // Animate background for each visible cell
+  section.map(function(x, y, color) {
+    var newColor = animateColor(color);
+    background[coordsToIdx(x, y, settings.columns)] = newColor;
+    return newColor;
+  });
+
+  for (const [position, item] of gridItems.entries()) {
+    if (players.isPlayerAt(position)) {
+      // Line Edited - Player visibility
+      // If player should be invisible draw the item
+      if(!settings.others_visible) {
+        console.log("This loop!")
+        // find player at position
+        player = players.isPlayerAtNew(position)
+
+        //If this player is not the ego? player display the item anyways
+        if(!(player.id == dallinger.getUrlParameter('participant_id'))){
+          var texture = undefined;
+          if (item.item_id in pixels.itemTextures) {
+            texture = item.item_id;
+          }
+          section.plot(position[1], position[0], item.color, texture);
+        }
+      }
+      // Line Edited - Player visibility
+
+      if (!item.interactive && item.calories) {
+        // Non-interactive items get consumed immediately
+        // IF they have non-zero caloric value.
+        gridItems.remove(position);
+      }
+    } else {
+      var texture = undefined;
+      if (item.item_id in pixels.itemTextures) {
+        texture = item.item_id;
+      }
+      section.plot(position[1], position[0], item.color, texture);
+    }
+  }
+
+  // Draw the players:
+  players.drawToGrid(section);
+
+  // Show info about the item the current player
+  // is sharing a square with:
+  if (! _.isUndefined(ego)) {
+    updateItemInfoWindow(ego, gridItems);
+  }
+
+  // Add the Gaussian mask.
+  var elapsedTime = performance.now() - startTime;
+  var visibilityNow = clamp(
+    (settings.visibility * elapsedTime) / (1000 * settings.visibility_ramp_time),
+    3,
+    settings.visibility
+  );
+  if (settings.highlightEgo) {
+    visibilityNow = Math.min(visibilityNow, 4);
+  }
+  var g = gaussian(0, Math.pow(visibilityNow, 2));
+  rescaling = 1 / g.pdf(0);
+
+  if (! _.isUndefined(ego)) {
+    x = ego.position[1];
+    y = ego.position[0];
+  } else {
+    x = 1e100;
+    y = 1e100;
+  }
+  section.map(function(i, j, color) {
+    var newColor;
+    // Draw walls
+    if (settings.walls_visible) {
+      color = wall_map[[i,j]] || color;
+    }
+    // Add Blur
+    players.each(function (i, player) {
+      dimness = g.pdf(distance(y, x, player.position[0], player.position[1])) * rescaling;
+      player["dimness"] = dimness;
     });
 
     for (const [position, item] of gridItems.entries()) {
@@ -22594,6 +22850,13 @@ var require;/*global dallinger, store */
     if (isSpectator) {
       $(".for-players").hide();
     }
+    if (delays.length) {
+      var average_delay = delays.reduce(function(sum, value){
+        return sum + value;
+      }, 0) / delays.length;
+      console.log('Average delay between state updates: whyyyyyyy' + average_delay + 'ms.');
+    }
+  }, 5000);
 
     // Consent to the experiment.
     $("#go-to-experiment").on("click", function () {
@@ -22743,16 +23006,16 @@ var require;/*global dallinger, store */
 
 
 /***/ }),
-/* 18 */,
 /* 19 */,
-/* 20 */
+/* 20 */,
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var lodash = __webpack_require__(0);
-var isarray = __webpack_require__(4);
-var isnumber = __webpack_require__(5);
-var isstring = __webpack_require__(6);
-var parse = __webpack_require__(7);
+var isarray = __webpack_require__(5);
+var isnumber = __webpack_require__(6);
+var isstring = __webpack_require__(7);
+var parse = __webpack_require__(8);
 
 function convert(data) {
   data = isarray(data[0]) && data[0].length !== 3 ? lodash.flatten(data, 1) : data;
@@ -22778,7 +23041,7 @@ module.exports = convert;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 function layout(rows, columns, padding, size, aspect) {
@@ -22809,7 +23072,7 @@ module.exports = layout;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 /**
@@ -22916,7 +23179,7 @@ module.exports = Identicon;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 /**
@@ -23135,7 +23398,7 @@ module.exports = Identicon;
     })();
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function texcoord(rows, columns, textureIndexes, numTextures, skipTextured) {
@@ -23179,11 +23442,11 @@ module.exports = texcoord;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(3);
-var route = __webpack_require__(26);
+var route = __webpack_require__(27);
 
 var convert = {};
 
@@ -23263,7 +23526,7 @@ module.exports = convert;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(3);
@@ -23366,171 +23629,12 @@ module.exports = function (fromModel) {
 
 
 /***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-	"aliceblue": [240, 248, 255],
-	"antiquewhite": [250, 235, 215],
-	"aqua": [0, 255, 255],
-	"aquamarine": [127, 255, 212],
-	"azure": [240, 255, 255],
-	"beige": [245, 245, 220],
-	"bisque": [255, 228, 196],
-	"black": [0, 0, 0],
-	"blanchedalmond": [255, 235, 205],
-	"blue": [0, 0, 255],
-	"blueviolet": [138, 43, 226],
-	"brown": [165, 42, 42],
-	"burlywood": [222, 184, 135],
-	"cadetblue": [95, 158, 160],
-	"chartreuse": [127, 255, 0],
-	"chocolate": [210, 105, 30],
-	"coral": [255, 127, 80],
-	"cornflowerblue": [100, 149, 237],
-	"cornsilk": [255, 248, 220],
-	"crimson": [220, 20, 60],
-	"cyan": [0, 255, 255],
-	"darkblue": [0, 0, 139],
-	"darkcyan": [0, 139, 139],
-	"darkgoldenrod": [184, 134, 11],
-	"darkgray": [169, 169, 169],
-	"darkgreen": [0, 100, 0],
-	"darkgrey": [169, 169, 169],
-	"darkkhaki": [189, 183, 107],
-	"darkmagenta": [139, 0, 139],
-	"darkolivegreen": [85, 107, 47],
-	"darkorange": [255, 140, 0],
-	"darkorchid": [153, 50, 204],
-	"darkred": [139, 0, 0],
-	"darksalmon": [233, 150, 122],
-	"darkseagreen": [143, 188, 143],
-	"darkslateblue": [72, 61, 139],
-	"darkslategray": [47, 79, 79],
-	"darkslategrey": [47, 79, 79],
-	"darkturquoise": [0, 206, 209],
-	"darkviolet": [148, 0, 211],
-	"deeppink": [255, 20, 147],
-	"deepskyblue": [0, 191, 255],
-	"dimgray": [105, 105, 105],
-	"dimgrey": [105, 105, 105],
-	"dodgerblue": [30, 144, 255],
-	"firebrick": [178, 34, 34],
-	"floralwhite": [255, 250, 240],
-	"forestgreen": [34, 139, 34],
-	"fuchsia": [255, 0, 255],
-	"gainsboro": [220, 220, 220],
-	"ghostwhite": [248, 248, 255],
-	"gold": [255, 215, 0],
-	"goldenrod": [218, 165, 32],
-	"gray": [128, 128, 128],
-	"green": [0, 128, 0],
-	"greenyellow": [173, 255, 47],
-	"grey": [128, 128, 128],
-	"honeydew": [240, 255, 240],
-	"hotpink": [255, 105, 180],
-	"indianred": [205, 92, 92],
-	"indigo": [75, 0, 130],
-	"ivory": [255, 255, 240],
-	"khaki": [240, 230, 140],
-	"lavender": [230, 230, 250],
-	"lavenderblush": [255, 240, 245],
-	"lawngreen": [124, 252, 0],
-	"lemonchiffon": [255, 250, 205],
-	"lightblue": [173, 216, 230],
-	"lightcoral": [240, 128, 128],
-	"lightcyan": [224, 255, 255],
-	"lightgoldenrodyellow": [250, 250, 210],
-	"lightgray": [211, 211, 211],
-	"lightgreen": [144, 238, 144],
-	"lightgrey": [211, 211, 211],
-	"lightpink": [255, 182, 193],
-	"lightsalmon": [255, 160, 122],
-	"lightseagreen": [32, 178, 170],
-	"lightskyblue": [135, 206, 250],
-	"lightslategray": [119, 136, 153],
-	"lightslategrey": [119, 136, 153],
-	"lightsteelblue": [176, 196, 222],
-	"lightyellow": [255, 255, 224],
-	"lime": [0, 255, 0],
-	"limegreen": [50, 205, 50],
-	"linen": [250, 240, 230],
-	"magenta": [255, 0, 255],
-	"maroon": [128, 0, 0],
-	"mediumaquamarine": [102, 205, 170],
-	"mediumblue": [0, 0, 205],
-	"mediumorchid": [186, 85, 211],
-	"mediumpurple": [147, 112, 219],
-	"mediumseagreen": [60, 179, 113],
-	"mediumslateblue": [123, 104, 238],
-	"mediumspringgreen": [0, 250, 154],
-	"mediumturquoise": [72, 209, 204],
-	"mediumvioletred": [199, 21, 133],
-	"midnightblue": [25, 25, 112],
-	"mintcream": [245, 255, 250],
-	"mistyrose": [255, 228, 225],
-	"moccasin": [255, 228, 181],
-	"navajowhite": [255, 222, 173],
-	"navy": [0, 0, 128],
-	"oldlace": [253, 245, 230],
-	"olive": [128, 128, 0],
-	"olivedrab": [107, 142, 35],
-	"orange": [255, 165, 0],
-	"orangered": [255, 69, 0],
-	"orchid": [218, 112, 214],
-	"palegoldenrod": [238, 232, 170],
-	"palegreen": [152, 251, 152],
-	"paleturquoise": [175, 238, 238],
-	"palevioletred": [219, 112, 147],
-	"papayawhip": [255, 239, 213],
-	"peachpuff": [255, 218, 185],
-	"peru": [205, 133, 63],
-	"pink": [255, 192, 203],
-	"plum": [221, 160, 221],
-	"powderblue": [176, 224, 230],
-	"purple": [128, 0, 128],
-	"rebeccapurple": [102, 51, 153],
-	"red": [255, 0, 0],
-	"rosybrown": [188, 143, 143],
-	"royalblue": [65, 105, 225],
-	"saddlebrown": [139, 69, 19],
-	"salmon": [250, 128, 114],
-	"sandybrown": [244, 164, 96],
-	"seagreen": [46, 139, 87],
-	"seashell": [255, 245, 238],
-	"sienna": [160, 82, 45],
-	"silver": [192, 192, 192],
-	"skyblue": [135, 206, 235],
-	"slateblue": [106, 90, 205],
-	"slategray": [112, 128, 144],
-	"slategrey": [112, 128, 144],
-	"snow": [255, 250, 250],
-	"springgreen": [0, 255, 127],
-	"steelblue": [70, 130, 180],
-	"tan": [210, 180, 140],
-	"teal": [0, 128, 128],
-	"thistle": [216, 191, 216],
-	"tomato": [255, 99, 71],
-	"turquoise": [64, 224, 208],
-	"violet": [238, 130, 238],
-	"wheat": [245, 222, 179],
-	"white": [255, 255, 255],
-	"whitesmoke": [245, 245, 245],
-	"yellow": [255, 255, 0],
-	"yellowgreen": [154, 205, 50]
-};
-
-
-/***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
-var colorNames = __webpack_require__(29);
-var swizzle = __webpack_require__(41);
+var colorNames = __webpack_require__(4);
+var swizzle = __webpack_require__(40);
 var hasOwnProperty = Object.hasOwnProperty;
 
 var reverseNames = Object.create(null);
@@ -23776,165 +23880,6 @@ function hexDouble(num) {
 /* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-module.exports = {
-	"aliceblue": [240, 248, 255],
-	"antiquewhite": [250, 235, 215],
-	"aqua": [0, 255, 255],
-	"aquamarine": [127, 255, 212],
-	"azure": [240, 255, 255],
-	"beige": [245, 245, 220],
-	"bisque": [255, 228, 196],
-	"black": [0, 0, 0],
-	"blanchedalmond": [255, 235, 205],
-	"blue": [0, 0, 255],
-	"blueviolet": [138, 43, 226],
-	"brown": [165, 42, 42],
-	"burlywood": [222, 184, 135],
-	"cadetblue": [95, 158, 160],
-	"chartreuse": [127, 255, 0],
-	"chocolate": [210, 105, 30],
-	"coral": [255, 127, 80],
-	"cornflowerblue": [100, 149, 237],
-	"cornsilk": [255, 248, 220],
-	"crimson": [220, 20, 60],
-	"cyan": [0, 255, 255],
-	"darkblue": [0, 0, 139],
-	"darkcyan": [0, 139, 139],
-	"darkgoldenrod": [184, 134, 11],
-	"darkgray": [169, 169, 169],
-	"darkgreen": [0, 100, 0],
-	"darkgrey": [169, 169, 169],
-	"darkkhaki": [189, 183, 107],
-	"darkmagenta": [139, 0, 139],
-	"darkolivegreen": [85, 107, 47],
-	"darkorange": [255, 140, 0],
-	"darkorchid": [153, 50, 204],
-	"darkred": [139, 0, 0],
-	"darksalmon": [233, 150, 122],
-	"darkseagreen": [143, 188, 143],
-	"darkslateblue": [72, 61, 139],
-	"darkslategray": [47, 79, 79],
-	"darkslategrey": [47, 79, 79],
-	"darkturquoise": [0, 206, 209],
-	"darkviolet": [148, 0, 211],
-	"deeppink": [255, 20, 147],
-	"deepskyblue": [0, 191, 255],
-	"dimgray": [105, 105, 105],
-	"dimgrey": [105, 105, 105],
-	"dodgerblue": [30, 144, 255],
-	"firebrick": [178, 34, 34],
-	"floralwhite": [255, 250, 240],
-	"forestgreen": [34, 139, 34],
-	"fuchsia": [255, 0, 255],
-	"gainsboro": [220, 220, 220],
-	"ghostwhite": [248, 248, 255],
-	"gold": [255, 215, 0],
-	"goldenrod": [218, 165, 32],
-	"gray": [128, 128, 128],
-	"green": [0, 128, 0],
-	"greenyellow": [173, 255, 47],
-	"grey": [128, 128, 128],
-	"honeydew": [240, 255, 240],
-	"hotpink": [255, 105, 180],
-	"indianred": [205, 92, 92],
-	"indigo": [75, 0, 130],
-	"ivory": [255, 255, 240],
-	"khaki": [240, 230, 140],
-	"lavender": [230, 230, 250],
-	"lavenderblush": [255, 240, 245],
-	"lawngreen": [124, 252, 0],
-	"lemonchiffon": [255, 250, 205],
-	"lightblue": [173, 216, 230],
-	"lightcoral": [240, 128, 128],
-	"lightcyan": [224, 255, 255],
-	"lightgoldenrodyellow": [250, 250, 210],
-	"lightgray": [211, 211, 211],
-	"lightgreen": [144, 238, 144],
-	"lightgrey": [211, 211, 211],
-	"lightpink": [255, 182, 193],
-	"lightsalmon": [255, 160, 122],
-	"lightseagreen": [32, 178, 170],
-	"lightskyblue": [135, 206, 250],
-	"lightslategray": [119, 136, 153],
-	"lightslategrey": [119, 136, 153],
-	"lightsteelblue": [176, 196, 222],
-	"lightyellow": [255, 255, 224],
-	"lime": [0, 255, 0],
-	"limegreen": [50, 205, 50],
-	"linen": [250, 240, 230],
-	"magenta": [255, 0, 255],
-	"maroon": [128, 0, 0],
-	"mediumaquamarine": [102, 205, 170],
-	"mediumblue": [0, 0, 205],
-	"mediumorchid": [186, 85, 211],
-	"mediumpurple": [147, 112, 219],
-	"mediumseagreen": [60, 179, 113],
-	"mediumslateblue": [123, 104, 238],
-	"mediumspringgreen": [0, 250, 154],
-	"mediumturquoise": [72, 209, 204],
-	"mediumvioletred": [199, 21, 133],
-	"midnightblue": [25, 25, 112],
-	"mintcream": [245, 255, 250],
-	"mistyrose": [255, 228, 225],
-	"moccasin": [255, 228, 181],
-	"navajowhite": [255, 222, 173],
-	"navy": [0, 0, 128],
-	"oldlace": [253, 245, 230],
-	"olive": [128, 128, 0],
-	"olivedrab": [107, 142, 35],
-	"orange": [255, 165, 0],
-	"orangered": [255, 69, 0],
-	"orchid": [218, 112, 214],
-	"palegoldenrod": [238, 232, 170],
-	"palegreen": [152, 251, 152],
-	"paleturquoise": [175, 238, 238],
-	"palevioletred": [219, 112, 147],
-	"papayawhip": [255, 239, 213],
-	"peachpuff": [255, 218, 185],
-	"peru": [205, 133, 63],
-	"pink": [255, 192, 203],
-	"plum": [221, 160, 221],
-	"powderblue": [176, 224, 230],
-	"purple": [128, 0, 128],
-	"rebeccapurple": [102, 51, 153],
-	"red": [255, 0, 0],
-	"rosybrown": [188, 143, 143],
-	"royalblue": [65, 105, 225],
-	"saddlebrown": [139, 69, 19],
-	"salmon": [250, 128, 114],
-	"sandybrown": [244, 164, 96],
-	"seagreen": [46, 139, 87],
-	"seashell": [255, 245, 238],
-	"sienna": [160, 82, 45],
-	"silver": [192, 192, 192],
-	"skyblue": [135, 206, 235],
-	"slateblue": [106, 90, 205],
-	"slategray": [112, 128, 144],
-	"slategrey": [112, 128, 144],
-	"snow": [255, 250, 250],
-	"springgreen": [0, 255, 127],
-	"steelblue": [70, 130, 180],
-	"tan": [210, 180, 140],
-	"teal": [0, 128, 128],
-	"thistle": [216, 191, 216],
-	"tomato": [255, 99, 71],
-	"turquoise": [64, 224, 208],
-	"violet": [238, 130, 238],
-	"wheat": [245, 222, 179],
-	"white": [255, 255, 255],
-	"whitesmoke": [245, 245, 245],
-	"yellow": [255, 255, 0],
-	"yellowgreen": [154, 205, 50]
-};
-
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
 /** 
  * Box-Muller implementation
  * https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
@@ -23981,7 +23926,7 @@ module.exports = {
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24030,13 +23975,13 @@ module.exports = function hasSymbols() {
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var hasSymbols = __webpack_require__(31);
+var hasSymbols = __webpack_require__(30);
 
 module.exports = function hasToStringTagShams() {
 	return hasSymbols() && !!Symbol.toStringTag;
@@ -24044,7 +23989,7 @@ module.exports = function hasToStringTagShams() {
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports) {
 
 module.exports = function isArrayish(obj) {
@@ -24059,7 +24004,7 @@ module.exports = function isArrayish(obj) {
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports) {
 
 /*!
@@ -24086,10 +24031,10 @@ function isSlowBuffer (obj) {
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isBuffer = __webpack_require__(34);
+var isBuffer = __webpack_require__(33);
 var toString = Object.prototype.toString;
 
 /**
@@ -24208,7 +24153,7 @@ module.exports = function kindOf(val) {
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24712,7 +24657,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports) {
 
 /* MIT license */
@@ -25416,10 +25361,10 @@ for (var key in cssKeywords) {
 
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var conversions = __webpack_require__(37);
+var conversions = __webpack_require__(36);
 
 var convert = function() {
    return new Converter();
@@ -25513,7 +25458,7 @@ Converter.prototype.getValues = function(space) {
 module.exports = convert;
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25735,7 +25680,7 @@ module.exports = ReconnectingWebsocket;
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function (global, factory) {
@@ -35962,13 +35907,13 @@ return wrapREGL;
 
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var isArrayish = __webpack_require__(33);
+var isArrayish = __webpack_require__(32);
 
 var concat = Array.prototype.concat;
 var slice = Array.prototype.slice;
@@ -35998,7 +35943,7 @@ swizzle.wrap = function (fn) {
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports) {
 
 var g;
@@ -36025,7 +35970,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
