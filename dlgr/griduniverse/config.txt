@@ -1,6 +1,6 @@
 [Experiment Parameters]
-mode = live
-auto_recruit = false
+mode = debug
+auto_recruit = true
 recruiter = hotair
 network = FullyConnected
 block_size = 25
@@ -10,10 +10,12 @@ window_rows = 15
 window_columns = 15
 use_identicons = true
 background_animation = false
+lock_table_when_creating_participant = false
 
 [Game Parameters]
+num_games = 2
 max_participants = 2
-num_rounds = 5
+num_rounds = 2
 goal_items = 3
 num_cook = 2
 player_overlap = true
@@ -23,10 +25,10 @@ time_per_round = 2
 game_over_cond = time
 
 [Docker]
-[docker_image_base_name = ghcr.io/lucaslinzmeier/dallinger-griduniverse/griduniverse] 
+[docker_image_base_name = ghcr.io/lucaslinzmeier/dallinger-griduniverse/griduniverse]
 
 [AWS]
-[You will have to set these values yourself,] 
+[You will have to set these values yourself,]
 [they will be private so do no push them to any public locations]
 aws_access_key_id = xxx
 aws_secret_access_key = xxx

@@ -111,9 +111,20 @@ class TestRoundState(object):
         assert gridworld.remaining_round_time == 0
         assert gridworld.game_over is False
 
-    def test_check_round_starts_with_players(self, gridworld):
-        # Adding players starts the game
+    def test_check_round_doesnt_start_with_too_few_players(self, gridworld):
+        # Adding enough players starts the game
         gridworld.players = {1: mock.Mock()}
+        gridworld._start_if_ready()
+        gridworld.check_round_completion()
+        assert gridworld.round == 0
+        assert gridworld.start_timestamp is None
+        assert gridworld.remaining_round_time == 0
+        assert gridworld.game_over is False
+
+    def test_check_round_starts_with_player_quorum(self, gridworld):
+        # Adding enough players starts the game
+        gridworld.quorum = 2
+        gridworld.players = {1: mock.Mock(), 2: mock.Mock()}
         gridworld._start_if_ready()
         gridworld.check_round_completion()
         assert gridworld.start_timestamp is not None
@@ -121,6 +132,7 @@ class TestRoundState(object):
         assert gridworld.round == 0
 
     def test_check_round_change(self, gridworld):
+        gridworld.quorum = 1
         gridworld.players = {1: mock.Mock()}
         gridworld.num_rounds = 2
         gridworld._start_if_ready()
@@ -139,6 +151,7 @@ class TestRoundState(object):
             assert gridworld.players[1].motion_timestamp == 0
 
     def test_game_end(self, gridworld):
+        gridworld.quorum = 1
         gridworld.players = {1: mock.Mock()}
         gridworld.num_rounds = 1
         gridworld._start_if_ready()
@@ -151,9 +164,146 @@ class TestRoundState(object):
             assert gridworld.game_over is True
 
 
-@pytest.mark.usefixtures("env")
-class TestInstructions(object):
-    def test_instructions(self, gridworld):
-        # Just test something basic
-        html = gridworld.instructions()
-        assert "🫐 Gooseberry (3 points)" in html
+class TestMatrix2SerializedGridworld(object):
+    """Tests for converting a list of lists extracted from matrix
+    representation of initial grid state into the format used in
+    Gridworld [de]serialization.
+    """
+
+    @property
+    def subject(self):
+        from dlgr.griduniverse.csv_gridworlds import matrix2gridworld
+
+        return matrix2gridworld
+
+    def test_one_row(self):
+        csv = [["w", "stone", "", "gooseberry_bush|3", "p1c2"]]
+
+        result = self.subject(csv)
+
+        assert result == {
+            "columns": 5,
+            "items": [
+                {"id": 1, "item_id": "stone", "position": [0, 1]},
+                {
+                    "id": 2,
+                    "item_id": "gooseberry_bush",
+                    "position": [0, 3],
+                    "remaining_uses": 3,
+                },
+            ],
+            "players": [{"color": "YELLOW", "id": "1", "position": [0, 4]}],
+            "rows": 1,
+            "walls": [[0, 0]],
+        }
+
+    def test_to_demonstrate_orientation(self):
+        csv = [
+            ["top-left", "top-right"],
+            ["bottom-left", "bottom-right"],
+        ]
+
+        result = self.subject(csv)
+
+        assert result["items"] == [
+            {"id": 1, "item_id": "top-left", "position": [0, 0]},
+            {"id": 2, "item_id": "top-right", "position": [0, 1]},
+            {"id": 3, "item_id": "bottom-left", "position": [1, 0]},
+            {"id": 4, "item_id": "bottom-right", "position": [1, 1]},
+        ]
+
+    def test_multirow(self):
+        csv = [
+            ["w", "stone", "", "gooseberry_bush|3", "p1c1"],
+            ["", "w", "", "", ""],
+            ["", "p2c1", "w", "", ""],
+            ["", "", "", "w", ""],
+            ["", "", "", "p3c2", "w"],
+            ["", "", "", "", "w"],
+            ["gooseberry_bush|4", "", "", "", ""],
+            ["", "big_hard_rock", "", "", ""],
+            ["", "p4c2", "", "", ""],
+            ["", "", "p5c3", "", ""],
+        ]
+
+        result = self.subject(csv)
+
+        assert result == {
+            "columns": 5,
+            "items": [
+                {"id": 1, "item_id": "stone", "position": [0, 1]},
+                {
+                    "id": 2,
+                    "item_id": "gooseberry_bush",
+                    "position": [0, 3],
+                    "remaining_uses": 3,
+                },
+                {
+                    "id": 3,
+                    "item_id": "gooseberry_bush",
+                    "position": [6, 0],
+                    "remaining_uses": 4,
+                },
+                {"id": 4, "item_id": "big_hard_rock", "position": [7, 1]},
+            ],
+            "players": [
+                {"color": "BLUE", "id": "1", "position": [0, 4]},
+                {"color": "BLUE", "id": "2", "position": [2, 1]},
+                {"color": "YELLOW", "id": "3", "position": [4, 3]},
+                {"color": "YELLOW", "id": "4", "position": [8, 1]},
+                {"color": "ORANGE", "id": "5", "position": [9, 2]},
+            ],
+            "rows": 10,
+            "walls": [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 4]],
+        }
+
+    def test_supports_empty_matrix(self):
+        csv = []
+
+        result = self.subject(csv)
+
+        assert result == {"rows": 0, "columns": 0}
+
+    def test_not_confused_by_whitepace(self):
+        csv = [["w ", "  stone", "  ", " gooseberry_bush | 3 ", " p1c2"]]
+
+        result = self.subject(csv)
+
+        assert result == {
+            "columns": 5,
+            "items": [
+                {"id": 1, "item_id": "stone", "position": [0, 1]},
+                {
+                    "id": 2,
+                    "item_id": "gooseberry_bush",
+                    "position": [0, 3],
+                    "remaining_uses": 3,
+                },
+            ],
+            "players": [{"color": "YELLOW", "id": "1", "position": [0, 4]}],
+            "rows": 1,
+            "walls": [[0, 0]],
+        }
+
+    def test_explains_invalid_player_colors(self):
+        csv = [["p1c999"]]
+
+        with pytest.raises(ValueError) as exc_info:
+            self.subject(csv)
+
+        assert exc_info.match("Invalid player color")
+
+    def test_preserves_empty_edge_rows_and_columns(self):
+        csv = [
+            ["", "", "", "", ""],
+            ["", "", "stone", "", ""],
+            ["", "", "", "", ""],
+        ]
+
+        result = self.subject(csv)
+
+        assert result == {
+            "columns": 5,
+            "items": [{"id": 1, "item_id": "stone", "position": [1, 2]}],
+            "rows": 3,
+        }

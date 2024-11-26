@@ -2,7 +2,7 @@
 
 {% block head %}
 {{ super() }}
-{% if experiment.grid.pre_difi_question %}
+{% if experiment.config.pre_difi_question %}
 <script type="text/javascript">
     var next_location = '/difi';
 </script>

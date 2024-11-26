@@ -19,6 +19,7 @@
   "devDependencies": {
     "browser-sync": "<2.19.0",
     "browser-sync-webpack-plugin": "^2.3.0",
+    "prettier": "3.2.5",
     "uglify-es": "^3.0.28",
     "webpack": "^2.4.1"
   },
@@ -49,5 +50,6 @@
   "bugs": {
     "url": "https://github.com/Dallinger/Griduniverse/issues"
   },
-  "homepage": "https://github.com/Dallinger/Griduniverse#readme"
+  "homepage": "https://github.com/Dallinger/Griduniverse#readme",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

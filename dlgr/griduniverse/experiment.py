@@ -1,6 +1,7 @@
 """The Guniduniverse."""
 
 import collections
+import csv
 import datetime
 import itertools
 import json
@@ -8,6 +9,7 @@ import logging
 import math
 import os
 import random
+import re
 import string
 import time
 import uuid
@@ -22,6 +24,7 @@ from dallinger import db, recruiters
 from dallinger.compat import unicode
 from dallinger.config import get_config
 from dallinger.experiment import Experiment
+from dallinger.experiment_server import sockets
 from faker import Factory
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -46,6 +49,9 @@ GU_PARAMS = {
     "max_participants": int,
     "bot_policy": unicode,
     "num_rounds": int,
+    "num_games": int,
+    "quorum": int,
+    "game_quorum": int,
     "time_per_round": float,
     "instruct": bool,
     "columns": int,
@@ -96,6 +102,7 @@ GU_PARAMS = {
     "difi_group_label": unicode,
     "difi_group_image": unicode,
     "fun_survey": bool,
+    "map_csv": unicode,
     "pre_difi_question": bool,
     "pre_difi_group_label": unicode,
     "pre_difi_group_image": unicode,
@@ -166,22 +173,13 @@ class Gridworld(object):
 
     GREEN = [0.51, 0.69, 0.61]
     WHITE = [1.00, 1.00, 1.00]
-    
+
     wall_locations = None
     item_locations = None
     walls_updated = True
     items_updated = True
 
-    def __new__(cls, **kwargs):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(Gridworld, cls).__new__(cls)
-        return cls.instance
-
     def __init__(self, **kwargs):
-        # If Singleton is already initialized, do nothing
-        if hasattr(self, "num_players"):
-            return
-
         self.log_event = kwargs.get("log_event", lambda x: None)
 
         #Line edited
@@ -189,26 +187,17 @@ class Gridworld(object):
 
         # Players
         self.num_players = kwargs.get("max_participants", 3)
+        # Minimum quorum for game defaults to max nubmer of players per game,
+        # and cannot exceed that number
+        self.quorum = min(kwargs.get("game_quorum", self.num_players), self.num_players)
 
         # Rounds
         self.num_rounds = kwargs.get("num_rounds", 1)
         self.time_per_round = kwargs.get("time_per_round", 300)
 
-        # Instructions
-        self.instruct = kwargs.get("instruct", True)
-
         # Grid
         self.columns = kwargs.get("columns", 25)
         self.rows = kwargs.get("rows", 25)
-        self.window_columns = kwargs.get("window_columns", min(self.columns, 25))
-        self.window_rows = kwargs.get("window_rows", min(self.rows, 25))
-        self.block_size = kwargs.get("block_size", 10)
-        self.padding = kwargs.get("padding", 1)
-        self.chat_visibility_threshold = kwargs.get("chat_visibility_threshold", 0.4)
-        self.spatial_chat = kwargs.get("spatial_chat", False)
-        self.visibility = kwargs.get("visibility", 40)
-        self.visibility_ramp_time = kwargs.get("visibility_ramp_time", 4)
-        self.background_animation = kwargs.get("background_animation", True)
         self.player_overlap = kwargs.get("player_overlap", False)
 
         # Motion
@@ -230,9 +219,7 @@ class Gridworld(object):
 
         # Identity
         self.num_colors = kwargs.get("num_colors", 3)
-        self.mutable_colors = kwargs.get("mutable_colors", False)
         self.costly_colors = kwargs.get("costly_colors", False)
-        self.pseudonyms = kwargs.get("pseudonyms", True)
         self.pseudonyms_locale = kwargs.get("pseudonyms_locale", "en_US")
         self.pseudonyms_gender = kwargs.get("pseudonyms_gender", None)
         self.contagion = kwargs.get("contagion", 0)
@@ -242,10 +229,8 @@ class Gridworld(object):
         self.use_identicons = kwargs.get("use_identicons", True)
 
         # Walls
-        self.walls_visible = kwargs.get("walls_visible", True)
         self.walls_density = kwargs.get("walls_density", 0.0)
         self.walls_contiguity = kwargs.get("walls_contiguity", 1.0)
-        self.build_walls = kwargs.get("build_walls", False)
         self.wall_building_cost = kwargs.get("wall_building_cost", 0)
         self.wall_locations = {}
 
@@ -271,7 +256,6 @@ class Gridworld(object):
         self.donation_public = kwargs.get("donation_public", False)
         self.intergroup_competition = kwargs.get("intergroup_competition", 1)
         self.intragroup_competition = kwargs.get("intragroup_competition", 1)
-        self.score_visible = kwargs.get("score_visible", False)
         self.alternate_consumption_donation = kwargs.get(
             "alternate_consumption_donation", False
         )
@@ -285,13 +269,6 @@ class Gridworld(object):
         self.difi_group_image = kwargs.get(
             "difi_group_image", "/static/images/group.jpg"
         )
-        self.fun_survey = kwargs.get("fun_survey", False)
-        self.pre_difi_question = kwargs.get("pre_difi_question", False)
-        self.pre_difi_group_label = kwargs.get("pre_difi_group_label", "Group")
-        self.pre_difi_group_image = kwargs.get(
-            "pre_difi_group_image", "/static/images/group.jpg"
-        )
-        self.leach_survey = kwargs.get("leach_survey", False)
 
         # Collab parameters
         self.goal_items = kwargs.get("goal_items", 100)
@@ -387,14 +364,6 @@ class Gridworld(object):
         return not self.has_player(position) and not self.has_wall(position)
 
     @property
-    def limited_player_colors(self):
-        return self.player_colors[: self.num_colors]
-
-    @property
-    def limited_player_color_names(self):
-        return self.player_color_names[: self.num_colors]
-
-    @property
     def elapsed_round_time(self):
         if self.start_timestamp is None:
             return 0
@@ -418,7 +387,7 @@ class Gridworld(object):
         if self.items_consumed is None:
             elap = 0
         else: elap = self.num_items_consumed
-        
+
         raw_remaining = self.time_per_round - elap
 
         return max(0, raw_remaining)
@@ -505,7 +474,7 @@ class Gridworld(object):
                 return
 
             #LINE EDITED ROUND LOGIC -
-            # DESPAWN all items, put a blank back in player inventory and respawn 
+            # DESPAWN all items, put a blank back in player inventory and respawn
             # 2 hares and 1 stag
 
             #DESPAWN
@@ -515,8 +484,8 @@ class Gridworld(object):
                 self.spawn_item(item_id = "stag")
                 self.spawn_item(item_id = "hare")
                 self.spawn_item(item_id = "hare")
-            
-            
+
+
 
                 self.items_updated = True
 
@@ -598,6 +567,18 @@ class Gridworld(object):
             player.payoff *= inter_proportions[player.color_idx]
             player.payoff *= self.dollars_per_point
 
+    def load_map(self, csv_file_path):
+        with open(csv_file_path) as csv_file:
+            grid_state = self.csv_to_grid_state(csv_file)
+        self.deserialize(grid_state)
+
+    def csv_to_grid_state(self, csv_file):
+        from .csv_gridworlds import matrix2gridworld  # avoid circular import
+
+        reader = csv.reader(csv_file)
+        grid_state = matrix2gridworld(list(reader))
+        return grid_state
+
     def build_labyrinth(self):
         if self.walls_density and not self.wall_locations:
             start = time.time()
@@ -615,7 +596,7 @@ class Gridworld(object):
 
     def _start_if_ready(self):
         # Don't start unless we have a least one player
-        if self.players and not self.game_started:
+        if len(self.players) >= self.quorum and not self.game_started:
             self.start_timestamp = time.time()
 
     @property
@@ -661,7 +642,7 @@ class Gridworld(object):
                     self.columns,
                 )
             )
-        self.round = state["round"]
+        self.round = state.get("round", 0)
         # @@@ can't set donation_active because it's a property
         # self.donation_active = state['donation_active']
 
@@ -699,48 +680,48 @@ class Gridworld(object):
         text += """<p><p>Page 1/2: Basic Controls"""
 
         text += """<br><img src='static/images/game_image.png' height='300'><br>"""
-        text += """<p>You are going to play a game live with another participant. 
+        text += """<p>You are going to play a game live with another participant.
 
             <p>The game is played on a {g.columns} x {g.rows} grid, where each player occupies one block."""
 
         if self.others_visible:
             text += """  You and the other player will be marked by different colors (BLUE, YELLOW or ORANGE)."""
-        
+
         else:
             text += """  <b>However, you will not be able to see where the other player is on the grid.</b>"""
 
-        
+
         text += """<p>You can move around the grid using the arrow keys.
                 <br><img src='static/images/keys.gif' height='60'><br>
                 You can collect items using the spacebar.
                 """
         if self.player_overlap:
             text += " More than one player may occupy a block at the same time."
-        
-      
+
+
         text += """<p><p>Page 2/2: Game instructions"""
-        text += """<p>In this game, you and the other player are hunters!  
+        text += """<p>In this game, you and the other player are hunters!
             You can earn points by hunting the following animals."""
 
         text += """<ul>
                     <li>🐇 Hare (3 points)</li>
                     <li>🦌 Stag (4 points)</li>
                 </ul>"""
-        
+
         text += """You may only hunt once per round, so you must choose whether to hunt a hare or a stag: """
 
         text += """<ul>
                     <li>🐇 To hunt a hare (3 points), occupy its space and hit the spacebar. You will receive 3 points when the hare is caught.
                     <br><img src='static/images/hare_collect.gif' height='300'><br>
                     </li>
-                    <li>🦌 To hunt a stag (4 points): <b>both you and the other other player</b> must occupy the stag's space or be adjacent to the stag, 
+                    <li>🦌 To hunt a stag (4 points): <b>both you and the other other player</b> must occupy the stag's space or be adjacent to the stag,
                     and one of you must hit the spacebar. Both players will receive 4 points when a stag is caught.
                     <br><img src='static/images/stag_collect.gif' height='300'><br>
                     </li>
                 </ul>"""
 
         text += """<p>Animals do not disappear when you collect them."""
-        text += """<p>The game has 5 rounds, and a round ends after both players have hunted a hare or a stag.  
+        text += """<p>The game has 5 rounds, and a round ends after both players have hunted a hare or a stag.
         Remember: You cannot hunt both a hare and a stag in the same round, you must choose one or the other!"""
 
         text += """<p><b>Your goal in this game is to get as many points as you can. </b>"""
@@ -800,9 +781,9 @@ class Gridworld(object):
         if consumed and item.public_good:
             for player_to in self.players.values():
                 player_to.score += item.public_good * consumed
-    
+
     def cook(self):
-        """Players need to put self.num_cook items in the oven to make 1 new food. 
+        """Players need to put self.num_cook items in the oven to make 1 new food.
         The oven takes cook_time seconds to finish."""
         for player in self.players.values():
             position = tuple(player.position)
@@ -810,13 +791,13 @@ class Gridworld(object):
                 item = self.item_locations[position]
                 if item.item_id == "oven":
                     self.items_cooking += 1
-                    if (self.items_cooking == self.num_cook) and not self.oven_in_use: 
+                    if (self.items_cooking == self.num_cook) and not self.oven_in_use:
                         self.oven_in_use = True
 
                         for elapsed_time in range(self.cook_time, 0, -1):
                             self.oven_time_left = elapsed_time
                             time.sleep(1)
-                
+
                         self.items_cooked.append(item)
                         self.oven_in_use = False
                         self.items_cooking = 0
@@ -850,14 +831,14 @@ class Gridworld(object):
 
         logger.warning(self.others_visible)
 
-        
+
         self.log_event(
             {
                 "type": "spawn item",
                 "position": position,
             }
         )
-        
+
     def items_changed(self, last_items):
         locations = self.item_locations
         if len(last_items) != len(locations):
@@ -1036,7 +1017,7 @@ class Item:
     """
 
     item_config: dict
-    id: int = field(default_factory=lambda: uuid.uuid4())
+    id: int = field(default_factory=lambda: uuid.uuid4().int)
     creation_timestamp: float = field(default_factory=time.time)
     position: tuple = (0, 0)
     remaining_uses: int = field(default=None)
@@ -1275,7 +1256,11 @@ extra_routes = flask.Blueprint(
 
 @extra_routes.route("/consent")
 def consent():
-    """Return the consent form. Here for backwards-compatibility with 2.x."""
+    """We have a custom consent form.
+
+    TODO: having a custom route may be obsolete at this point, and it may
+    be enough to have just the custom template in the right place.
+    """
     config = get_config()
     return flask.render_template(
         "consent.html",
@@ -1293,8 +1278,21 @@ def serve_grid():
     return flask.render_template("grid.html", app_id=config.get("id"))
 
 
-class Griduniverse(Experiment):
-    """Define the structure of the experiment."""
+class Game(object):
+    def __init__(
+        self, network_id, item_config, transition_config, player_config, game_config
+    ):
+        self.network_id = network_id
+        self.item_config = item_config
+        self.transition_config = transition_config
+        self.config = game_config
+        self.grid = Gridworld(
+            log_event=self.record_event,
+            item_config=item_config,
+            transition_config=transition_config,
+            player_config=player_config,
+            **game_config,
+        )
 
     channel = "griduniverse_ctrl"
     state_count = 0
@@ -1307,16 +1305,6 @@ class Griduniverse(Experiment):
         self.experiment_repeats = 1
 
         self.redis_conn = db.redis_conn
-        if session:
-            self.setup()
-            self.grid = Gridworld(
-                log_event=self.record_event,
-                item_config=self.item_config,
-                transition_config=self.transition_config,
-                player_config=self.player_config,
-                **self.config.as_dict(),
-            )
-            self.session.commit()
 
     def configure(self):
         super(Griduniverse, self).configure()
@@ -1329,54 +1317,9 @@ class Griduniverse(Experiment):
         )
         self.network_factory = self.config.get("network", "FullyConnected")
 
-        game_config_file = os.path.join(os.path.dirname(__file__), GAME_CONFIG_FILE)
-        with open(game_config_file, "r") as game_config_stream:
-            self.game_config = yaml.safe_load(game_config_stream)
-        self.item_config = {o["item_id"]: o for o in self.game_config.get("items", ())}
-
-        # If any item is missing a key, add it with default value.
-        item_defaults = self.game_config.get("item_defaults", {})
-        for item in self.item_config.values():
-            for prop in item_defaults:
-                if prop not in item:
-                    item[prop] = item_defaults[prop]
-
-        self.transition_config = {}
-        transition_defaults = self.game_config.get("transition_defaults", {})
-        for t in self.game_config.get("transitions", ()):
-            transition = transition_defaults.copy()
-            transition.update(t)
-            if transition["last_use"]:
-                self.transition_config[
-                    ("last", t["actor_start"], t["target_start"])
-                ] = transition
-            else:
-                self.transition_config[
-                    (t["actor_start"], t["target_start"])
-                ] = transition
-
-        self.player_config = self.game_config.get("player_config")
-        # This is accessed by the grid.html template to load the configuration on the client side:
-        # TODO: could this instead be passed as an arg to the template in
-        # the /grid route?
-        self.item_config_json = json.dumps(self.item_config)
-        self.transition_config_json = json.dumps(
-            {
-                "|".join(str(e or "") for e in k): v
-                for k, v in self.transition_config.items()
-            }
-        )
-
-    @classmethod
-    def extra_parameters(cls):
-        config = get_config()
-        for key in GU_PARAMS:
-            config.register(key, GU_PARAMS[key])
-
-    @property
-    def environment(self):
-        environment = self.socket_session.query(dallinger.nodes.Environment).one()
-        return environment
+    def on_launch(self):
+        gevent.spawn(self.send_state_thread)
+        gevent.spawn(self.game_loop)
 
     @cached_property
     def socket_session(self):
@@ -1388,7 +1331,6 @@ class Griduniverse(Experiment):
         )
         return session
 
-    @property
     def background_tasks(self):
         if self.config.get("replay", False):
             return []
@@ -1425,7 +1367,7 @@ class Griduniverse(Experiment):
     def setup(self):
         """Setup the networks."""
         self.node_by_player_id = {}
-        
+
         #Line edited Prolific data correction
         self.worker_id_to_assignment_id = {}
         self.worker_id_test = ""
@@ -1481,11 +1423,11 @@ class Griduniverse(Experiment):
             "hit_id": worker_id,
             "worker_id": worker_id,
             "assignment_id": worker_id,
-            "entry_information": entry_information, 
+            "entry_information": entry_information,
             }
 
             return participant_data
-        
+
         else:
             logger.warning("NON-STUDY_ID FORMAT")
             logger.warning(entry_information)
@@ -1581,59 +1523,28 @@ class Griduniverse(Experiment):
         """The reason offered to the participant for giving the bonus."""
         return (
             "Thank you for participating! You earned a bonus based on your "
-            "performance in Griduniverse!"
+            "performance in Griduniverse!")
+
+    #### END Lucas code ####
+
+    @property
+    def environment(self):
+        # For a game that continues into multiple generations of players we may
+        # need a new environment
+        environment = (
+            self.socket_session.query(dallinger.nodes.Environment)
+            .filter_by(network_id=self.network_id)
+            .one_or_none()
         )
-
-    def dispatch(self, msg):
-        """Route incoming messages to the appropriate method based on message type"""
-        mapping = {
-            "connect": self.handle_connect,
-            "disconnect": self.handle_disconnect,
-        }
-        if not self.config.get("replay", False):
-            # Ignore these events in replay mode
-            mapping.update(
-                {
-                    "chat": self.handle_chat_message,
-                    "change_color": self.handle_change_color,
-                    "move": self.handle_move,
-                    "donation_submitted": self.handle_donation,
-                    "plant_food": self.handle_plant_food,
-                    "toggle_visible": self.handle_toggle_visible,
-                    "build_wall": self.handle_build_wall,
-                    "item_pick_up": self.handle_item_pick_up,
-                    "item_consume": self.handle_item_consume,
-                    "item_transition": self.handle_item_transition,
-                    "item_drop": self.handle_item_drop,
-                }
+        if environment is None:
+            network = self.socket_session.query(dallinger.models.Network).get(
+                self.network_id
             )
+            environment = dallinger.nodes.Environment(network=network)
+            self.socket_session.add(environment)
+            self.socket_session.commit()
 
-        if msg["type"] in mapping:
-            mapping[msg["type"]](msg)
-
-    def send(self, raw_message):
-        """Socket interface; point of entry for incoming messages.
-
-        param raw_message is a string with a channel prefix, for example:
-
-            'griduniverse_ctrl:{"type":"move","player_id":0,"move":"left"}'
-        """
-        message = self.parse_message(raw_message)
-        if message is not None:
-            message["server_time"] = time.time()
-            self.dispatch((message))
-            if "player_id" in message:
-                self.record_event(message, message["player_id"])
-
-    def parse_message(self, raw_message):
-        """Strip the channel prefix off the raw message, then return
-        the parsed JSON.
-        """
-        if raw_message.startswith(self.channel + ":"):
-            body = raw_message.replace(self.channel + ":", "")
-            message = json.loads(body)
-
-            return message
+        return environment
 
     def record_event(self, details, player_id=None):
         """Record an event in the Info table."""
@@ -1913,7 +1824,7 @@ class Griduniverse(Experiment):
         if transition is None:
             transition = self.transition_config.get(transition_key)
 
-        #LINE EDITED NEIGHBORS - 
+        #LINE EDITED NEIGHBORS -
         required_actors = transition and transition.get("required_actors", 0)
         neighbors = player.neighbors()
 
@@ -1942,10 +1853,59 @@ class Griduniverse(Experiment):
             return
 
         if required_actors and len(neighbors) + 1 < required_actors:
-            other_player_item = null
+            other_player_item = None
+
+        # these values may be positive or negative, so we may add or remove uses
+        modify_actor_uses, modify_target_uses = transition.get("modify_uses", (0, 0))
+        if player_item and player_item.remaining_uses:
+            player_item.remaining_uses += modify_actor_uses
+        if location_item and location_item.remaining_uses:
+            location_item.remaining_uses += modify_target_uses
+
+        # An item that is replaced or has no remaining uses has been "consumed"
+        if player_item and (
+            (player_item.remaining_uses < 1) or transition["actor_end"] != actor_key
+        ):
+            self.grid.items_consumed.append(player_item)
+            player.current_item = None
+            self.grid.items_updated = True
+        if location_item and (
+            (location_item.remaining_uses < 1) or transition["target_end"] != target_key
+        ):
+            del self.grid.item_locations[position]
+            self.grid.items_consumed.append(location_item)
+            self.grid.items_updated = True
+
+        # The player's item type has changed
+        if transition["actor_end"] != actor_key:
+            if transition["actor_end"] is not None:
+                replacement_item_config = self.item_config.get(transition["actor_end"])
+                replacement_item = Item(
+                    id=len(self.grid.item_locations) + len(self.grid.items_consumed),
+                    item_config=replacement_item_config,
+                )
+            else:
+                replacement_item = None
+            player.current_item = replacement_item
+            self.grid.items_updated = True
+
+        # The location's item type has changed
+        if transition["target_end"] != target_key:
+            new_target_item = Item(
+                id=len(self.grid.item_locations) + len(self.grid.items_consumed),
+                position=position,
+                item_config=self.item_config[transition["target_end"]],
+            )
+            self.grid.item_locations[position] = new_target_item
+            self.grid.items_updated = True
+
+        # Possibly distribute calories to participating players
+        transition_calories = transition.get("calories")
+        if transition_calories:
+            per_player = transition_calories // (len(neighbors) + 1)
             for other_player in neighbors:
                     other_player._item = other_player.current_item
-            
+
             if other_player_item.id != "blank":
                 error_msg = {
                     "type": "action_error",
@@ -1965,11 +1925,11 @@ class Griduniverse(Experiment):
 
         #Line Edited Database storage
         self.grid.log_event(msg)
-        
 
-        
-        #Line EDITED NEIGHBORS - 
-        
+
+
+        #Line EDITED NEIGHBORS -
+
         # The item is being put in the oven
         if transition["target_start"] == "oven":
             num_pies = self.grid.items_cooked
@@ -2051,8 +2011,8 @@ class Griduniverse(Experiment):
                 player.score += per_player
                 player.score += transition_calories % (len(neighbors) + 1)
 
-            #LINE EDITED NEIGHBORS - 
-        
+            #LINE EDITED NEIGHBORS -
+
 
     def handle_item_drop(self, msg):
         player = self.grid.players[msg["player_id"]]
@@ -2096,6 +2056,10 @@ class Griduniverse(Experiment):
             count += 1
 
             player_count = len(self.grid.players)
+            # Don't start sending state until all players are on the board
+            if not self.grid.game_started:
+                continue
+
             if not last_player_count or player_count != last_player_count:
                 update_walls = True
                 update_items = True
@@ -2152,7 +2116,10 @@ class Griduniverse(Experiment):
     def game_loop(self):
         """Update the world state."""
         gevent.sleep(0.1)
-        if not self.config.get("replay", False):
+        map_csv_path = self.config.get("map_csv", None)
+        if map_csv_path is not None:
+            self.grid.load_map(map_csv_path)
+        elif not self.config.get("replay", False):
             self.grid.build_labyrinth()
             logger.info("Spawning items")
             for item_type in self.item_config.values():
@@ -2246,6 +2213,311 @@ class Griduniverse(Experiment):
         self.socket_session.commit()
         return
 
+
+MSG_RE = re.compile(r"^(?P<channel>[-\w]+):(?P<body>.*)$")
+
+
+class Griduniverse(Experiment):
+    """Define the structure of the experiment."""
+
+    channel = "griduniverse_ctrl"
+    state_count = 0
+    replay_path = "/grid"
+
+    def __init__(self, session=None):
+        """Initialize the experiment."""
+        self.config = get_config()
+        super(Griduniverse, self).__init__(session)
+        if session:
+            self.setup()
+            self.games_by_control_channel_id = {}
+            self.redis_conn = db.redis_conn
+            for network in self.networks():
+                game = Game(
+                    network_id=network.id,
+                    item_config=self.item_config,
+                    transition_config=self.transition_config,
+                    player_config=self.player_config,
+                    game_config=self.config.as_dict(),
+                )
+                self.games_by_control_channel_id[game.control_channel] = game
+
+    def configure(self):
+        super(Griduniverse, self).configure()
+        self.experiment_repeats = self.config.get("num_games", 1)
+        self.num_participants = self.config.get("max_participants", 3)
+        self.instruct = self.config.get("instruct", True)
+        self.total_participants = self.num_participants * self.experiment_repeats
+        # Quorum defaults to the max number of players for a single game, and
+        # cannot exceed the total number of allowed participants
+        self.quorum = min(
+            self.config.get("quorum", self.num_participants), self.total_participants
+        )
+        self.initial_recruitment_size = self.config.get(
+            "num_recruits", self.total_participants
+        )
+        self.network_factory = self.config.get("network", "FullyConnected")
+        self.num_colors = self.config.get("num_colors", 3)
+
+        game_config_file = os.path.join(os.path.dirname(__file__), GAME_CONFIG_FILE)
+        with open(game_config_file, "r") as game_config_stream:
+            self.game_config = yaml.safe_load(game_config_stream)
+        self.item_config = {o["item_id"]: o for o in self.game_config.get("items", ())}
+
+        # If any item is missing a key, add it with default value.
+        item_defaults = self.game_config.get("item_defaults", {})
+        for item in self.item_config.values():
+            for prop in item_defaults:
+                if prop not in item:
+                    item[prop] = item_defaults[prop]
+
+        self.transition_config = {}
+        transition_defaults = self.game_config.get("transition_defaults", {})
+        for t in self.game_config.get("transitions", ()):
+            transition = transition_defaults.copy()
+            transition.update(t)
+            if transition["last_use"]:
+                self.transition_config[
+                    ("last", t["actor_start"], t["target_start"])
+                ] = transition
+            else:
+                self.transition_config[
+                    (t["actor_start"], t["target_start"])
+                ] = transition
+
+        self.player_config = self.game_config.get("player_config")
+        # This is accessed by the grid.html template to load the configuration on the client side:
+        # TODO: could this instead be passed as an arg to the template in
+        # the /grid route?
+        self.item_config_json = json.dumps(self.item_config)
+        self.transition_config_json = json.dumps(
+            {
+                "|".join(str(e or "") for e in k): v
+                for k, v in self.transition_config.items()
+            }
+        )
+
+    @property
+    def limited_player_colors(self):
+        return Gridworld.player_colors[: self.num_colors]
+
+    @property
+    def limited_player_color_names(self):
+        return Gridworld.player_color_names[: self.num_colors]
+
+    @classmethod
+    def extra_parameters(cls):
+        config = get_config()
+        for key in GU_PARAMS:
+            config.register(key, GU_PARAMS[key])
+
+    @property
+    def background_tasks(self):
+        if self.config.get("replay", False):
+            return
+        return [self.start_games]
+
+    def is_overrecruited(self, waiting_count):
+        """The experiment is overrecruited if the number of waiting players
+        exceeds the total number of participants allowed across all games.
+        """
+        if not self.quorum:
+            return False
+        return waiting_count > self.total_participants
+
+    def instructions(self):
+        instructions_file_path = os.path.join(
+            os.path.dirname(__file__), "templates/instructions/instruct-ready.html"
+        )
+        with open(instructions_file_path) as instructions_file:
+            instructions_html = instructions_file.read()
+            return instructions_html
+
+    def start_games(self):
+        # This is really inefficient, since the loops for all games will run
+        # within a single web worker. Can we make use of `multiprocessing` here
+        # (e.g. create each game instance in its own process and initiate
+        # launch using a `Pipe`)? Should we suggest just running these games as
+        # separate experiments in different docker containers on the same server
+        # when performance is an issue? The main problem with that approach is
+        # that the games will not share a single MTurk HIT.
+        for game in self.games_by_control_channel_id.values():
+            sockets.chat_backend.subscribe(self, game.control_channel)
+            game.on_launch()
+        sockets.chat_backend.subscribe(self, sockets.CONTROL_CHANNEL)
+
+    def create_network(self):
+        """Create a new network by reading the configuration file."""
+        class_ = getattr(dallinger.networks, self.network_factory)
+        return class_(max_size=self.num_participants + 1)
+
+    def choose_network(self, networks, participant):
+        """Start filling the first game/network first"""
+        networks.sort(key=lambda n: n.id)
+        return networks[0]
+
+    def create_node(self, participant, network):
+        try:
+            return dallinger.models.Node(network=network, participant=participant)
+        finally:
+            if not self.networks(full=False):
+                # If there are no spaces left in our networks we can close
+                # recruitment, to alleviate problems of over-recruitment
+                self.recruiter().close_recruitment()
+
+    def serialize(self, value):
+        return json.dumps(value)
+
+    def get_game_for_player_id(self, player_id):
+        # Lookup the node for this player
+        player_node = (
+            self.session.query(dallinger.models.Node)
+            .filter_by(participant_id=player_id)
+            .one_or_none()
+        )
+        if player_node is None:
+            return
+        channel = "griduniverse_ctrl-{}".format(player_node.network_id)
+        return self.games_by_control_channel_id.get(channel)
+
+    def recruit(self):
+        self.recruiter().close_recruitment()
+
+    def bonus(self, participant):
+        """The bonus to be awarded to the given participant.
+
+        Return the value of the bonus to be paid to `participant`.
+        """
+        data = self._last_state_for_player(participant)
+        if not data:
+            return 0.0
+
+        return float("{0:.2f}".format(data["payoff"]))
+
+    def bonus_reason(self):
+        """The reason offered to the participant for giving the bonus."""
+        return (
+            "Thank you for participating! You earned a bonus based on your "
+            "performance in Griduniverse!"
+        )
+
+    def dispatch(self, channel, msg):
+        """Route incoming messages to the appropriate method based on message type"""
+        # These are universal and provided by the Experiment class, all other
+        # handlers belong to a specific game instance
+        mapping = {
+            "connect": self.handle_connect,
+            "disconnect": self.handle_disconnect,
+        }
+        if channel in self.games_by_control_channel_id:
+            game = self.games_by_control_channel_id[channel]
+            if not self.config.get("replay", False):
+                # Ignore these events in replay mode
+                mapping.update(
+                    {
+                        "chat": game.handle_chat_message,
+                        "change_color": game.handle_change_color,
+                        "move": game.handle_move,
+                        "donation_submitted": game.handle_donation,
+                        "plant_food": game.handle_plant_food,
+                        "toggle_visible": game.handle_toggle_visible,
+                        "build_wall": game.handle_build_wall,
+                        "item_pick_up": game.handle_item_pick_up,
+                        "item_consume": game.handle_item_consume,
+                        "item_transition": game.handle_item_transition,
+                        "item_drop": game.handle_item_drop,
+                    }
+                )
+
+        if msg["type"] in mapping:
+            mapping[msg["type"]](msg)
+
+    def send(self, raw_message):
+        """Socket interface; point of entry for incoming messages.
+
+        param raw_message is a string with a channel prefix, for example:
+
+            'griduniverse_ctrl:{"type":"move","player_id":0,"move":"left"}'
+        """
+        channel, message = self.parse_message(raw_message)
+        if message is not None:
+            message["server_time"] = time.time()
+            self.dispatch(channel, message)
+            if "player_id" in message:
+                if channel in self.games_by_control_channel_id:
+                    game = self.games_by_control_channel_id[channel]
+                elif channel == self.channel:
+                    game = self.get_game_for_player_id(message["player_id"])
+                if game:
+                    game.record_event(message, message["player_id"])
+
+    def parse_message(self, raw_message):
+        """Strip the channel prefix off the raw message, then return
+        the parsed JSON.
+        """
+        match = MSG_RE.match(raw_message)
+        if match:
+            channel = match.group("channel")
+            body = match.group("body")
+            message = json.loads(body)
+            return channel, message
+
+    def publish(self, msg):
+        """Publish a message to all griduniverse clients"""
+        self.redis_conn.publish("griduniverse", json.dumps(msg))
+
+    def handle_connect(self, msg):
+        player_id = msg["player_id"]
+        if self.config.get("replay", False):
+            # Force all participants to be specatators
+            msg["player_id"] = "spectator"
+            if not self.grid.start_timestamp:
+                self.grid.start_timestamp = time.time()
+        if player_id == "spectator":
+            logger.info("A spectator has connected.")
+            return
+
+        logger.info("Client {} has connected.".format(player_id))
+        participant = self.session.query(dallinger.models.Participant).get(player_id)
+        network = self.get_network_for_participant(participant)
+        if network:
+            game = self.games_by_control_channel_id[
+                "griduniverse_ctrl-{}".format(network.id)
+            ]
+            logger.info("Found an open network. Adding participant node...")
+            node = self.create_node(participant, network)
+            game.node_by_player_id[player_id] = node.id
+            self.session.add(node)
+            self.session.commit()
+            # Send a broadcast message
+            logger.info("Spawning player on the grid...")
+            # We use the current node id modulo the number of colours
+            # to pick the user's colour. This ensures that players are
+            # allocated to colours uniformly.
+            if player_id not in game.grid.players:
+                game.grid.spawn_player(
+                    id=player_id,
+                    color_name=self.limited_player_color_names[
+                        node.id % self.num_colors
+                    ],
+                    recruiter_id=participant.recruiter_id,
+                )
+            # Notify all clients that a new player has been added to a specific game
+            self.publish(
+                {
+                    "type": "player_added",
+                    "player_id": player_id,
+                    "game": network.id,
+                    "broadcast_channel": game.broadcast_channel,
+                    "control_channel": game.control_channel,
+                },
+            )
+        else:
+            logger.info("No free network found for player {}".format(player_id))
+
+    def handle_disconnect(self, msg):
+        logger.info("Client {} has disconnected.".format(msg["player_id"]))
+
     def player_feedback(self, data):
         engagement = int(json.loads(data.questions.list[-1][-1])["engagement"])
         difficulty = int(json.loads(data.questions.list[-1][-1])["difficulty"])
@@ -2255,21 +2527,40 @@ class Griduniverse(Experiment):
         except IndexError:
             return engagement, difficulty
 
+    def record_replay_event(self, details, player_id=None):
+        if self.game:
+            return self.game.replay_event(details, player_id)
+
     def replay_start(self):
-        self.grid = Gridworld(log_event=self.record_event, **self.config.as_dict())
+        self.grid = Gridworld(**self.config.as_dict())
 
     def replay_started(self):
         return self.grid.game_started
 
     def events_for_replay(self, session=None, target=None):
-        info_cls = dallinger.models.Info
+        info_cls = dallinger.models.nInfo
         from .models import Event
+
+        # We only replay the game run on the first network
+        network = session.query(dallinger.models.Network).first()
+        self.game = Game(
+            network_id=network.id,
+            item_config=self.item_config,
+            transition_config=self.transition_config,
+            player_config=self.player_config,
+            **self.config.as_dict(),
+        )
+        # replace the game grid with the one we created in `replay_start`
+        self.grid.log_event = self.game.replay_event
+        self.game.grid = self.grid
 
         # Get the base query from the parent class, but remove order_by fields as we override them
         # in the subqueries
-        events = Experiment.events_for_replay(
-            self, session=session, target=target
-        ).order_by(False)
+        events = (
+            Experiment.events_for_replay(self, session=session, target=target)
+            .filter_by(network_id=network.id)
+            .order_by(False)
+        )
         if target is None:
             # If we don't have a specific target time we can't optimise some states away
             return events
@@ -2335,11 +2626,11 @@ class Griduniverse(Experiment):
                 + event.creation_time.microsecond / 1e6
             )
         if event.type == "event":
-            self.publish(event.details)
+            self.game.publish(event.details)
             if event.details.get("type") == "new_round":
-                self.grid.check_round_completion()
+                self.game.grid.check_round_completion()
             elif event.details.get("type") == "chat":
-                self.handle_chat_message(event.details)
+                self.game.handle_chat_message(event.details)
 
         if event.type == "state":
             self.state_count += 1
@@ -2356,7 +2647,7 @@ class Griduniverse(Experiment):
                 "oven_in_use": self.oven_in_use,
                 "round": state["round"],
             }
-            self.grid.deserialize(state)
+            self.game.grid.deserialize(state)
             self.publish(msg)
 
     @property
@@ -2520,22 +2811,42 @@ class Griduniverse(Experiment):
     def save_data_to_file(self, data, filename):
         df = data.infos.df
         df.to_csv(filename, index=False)
-    
+
         # Open the same file in append mode
         with open(filename, 'a') as file:
             # Write a new line for separation
             file.write('\n')
-        
+
             # Write questions data to the same file
             questions_df = data.questions.df
             questions_df.to_csv(file, index=False, header=False)
 
+    def _environment_for_player(self, player):
+        # Lookup the node for this player
+        player_node = (
+            self.session.query(dallinger.models.Node)
+            .filter_by(participant_id=player.id)
+            .one_or_none()
+        )
+        # Lookup environment for network to which the player node belongs. If we
+        # have multiple environments per network for a multi-generational game,
+        # we will need to adjust this lookup
+        if player_node is None:
+            return
+        return (
+            self.session.query(dallinger.nodes.Environment)
+            .filter_by(network_id=player_node.network_id)
+            .one_or_none()
+        )
 
-    def _last_state_for_player(self, player_id):
-        most_recent_grid_state = self.environment.state()
+    def _last_state_for_player(self, player):
+        environment = self._environment_for_player(player)
+        most_recent_grid_state = (
+            environment.state() if environment is not None else None
+        )
         if most_recent_grid_state is not None:
             players = json.loads(most_recent_grid_state.contents)["players"]
-            id_matches = [p for p in players if int(p["id"]) == player_id]
+            id_matches = [p for p in players if int(p["id"]) == player.id]
             if id_matches:
                 return id_matches[0]
 
@@ -2550,5 +2861,3 @@ class Griduniverse(Experiment):
         )
 
         return finished_count >= self.initial_recruitment_size
-
-
