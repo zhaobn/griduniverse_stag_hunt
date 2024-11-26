@@ -127,7 +127,7 @@ df_distance_action = df_distance.merge(df_action[['game_id', 'round_id', 'chat_v
 df_distance_action.to_csv('start_distance.csv', index=False)
 
 # %%
-# df_distance_action = pd.read_csv('start_distance.csv')
+df_distance_action = pd.read_csv('start_distance.csv')
 def get_position_type(row):
   if row['to_stag1'] < row['to_hare1'] and row['to_stag1'] < row['to_hare2']:
     return 'stag_closest'
@@ -138,7 +138,7 @@ def get_position_type(row):
 
 df_distance_action['position_type'] = df_distance_action.apply(get_position_type, axis=1)
 df_distance_action['is_coop'] = (df_distance_action['action'] == 'stag').astype(int)
-grouped = df_distance_action.groupby(['position_type', 'round_id', 'chat_visible', 'others_visible']).agg(
+grouped = df_distance_action.groupby(['position_type', 'chat_visible', 'others_visible']).agg(
     cooperation_rate=('is_coop', 'mean'),
     cooperate_se=('is_coop', lambda x: np.std(x) / np.sqrt(len(x)))
 ).reset_index()
@@ -168,4 +168,4 @@ for ax, (chat_visible, others_visible), title in zip(axes.flatten(), conditions,
   ax.set_ylabel('Cooperation Rate')
 
 plt.tight_layout()
-# %%
+## %%
